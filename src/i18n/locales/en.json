@@ -1,0 +1,93 @@
+{
+    "common": {
+        "next": "Next",
+        "back": "Back",
+        "continue": "Continue",
+        "startJourney": "Start Your Journey",
+        "loading": "Loading...",
+        "wpm": "WPM",
+        "words": "words",
+        "seconds": "seconds",
+        "minute": "minute",
+        "skip": "Skip",
+        "done": "Done"
+    },
+    "welcome": {
+        "slide1": {
+            "headline": "Speed Beyond Limits",
+            "subheadline": "Master RSVP — the fastest way to read"
+        },
+        "slide2": {
+            "headline": "Read the Unseen",
+            "subheadline": "AI generates cinematic visuals as you read",
+            "every300Words": "Every 300 Words",
+            "cinematicVisuals": "Cinematic visuals bring your reading to life"
+        },
+        "slide3": {
+            "headline": "Master Your Focus",
+            "subheadline": "Daily training, news briefings, and habit tracking",
+            "trainingLab": "Training Lab",
+            "trainingLabDesc": "Eye exercises & focus games",
+            "dailyNews": "Daily News",
+            "dailyNewsDesc": "AI-summarized speed reading",
+            "streakSystem": "Streak System",
+            "streakSystemDesc": "Build your daily reading habit"
+        }
+    },
+    "assessment": {
+        "title": "Speed Assessment",
+        "subtitle": "Let's measure your reading speed",
+        "instructions": "Read the passage below at your normal pace. Tap when you finish.",
+        "tapToStart": "Tap to Start",
+        "reading": "Reading...",
+        "tapWhenDone": "Tap when finished",
+        "timeRemaining": "Time remaining",
+        "calculating": "Calculating your speed...",
+        "yourSpeed": "Your Reading Speed",
+        "wordsPerMinute": "words per minute",
+        "comparison": {
+            "faster": "You read {{percent}}% faster than average!",
+            "slower": "You read {{percent}}% slower than average",
+            "average": "You read at an average speed"
+        },
+        "averageWpm": "Average reader: 200-250 WPM",
+        "continueButton": "Continue",
+        "retakeButton": "Retake Test"
+    },
+    "home": {
+        "title": "Speed Reader",
+        "subtitle": "Transform reading into a cinematic experience",
+        "welcomeCard": "Welcome to Speed Reader AI",
+        "features": "RSVP • Bionic Reading • AI Visualization",
+        "aiFeatures": "AI Features",
+        "aiDescription": "Cinematic image generation every 300 words",
+        "readingProgress": "Reading Progress"
+    },
+    "tabs": {
+        "home": "Home",
+        "library": "Library",
+        "read": "Read",
+        "training": "Training",
+        "profile": "Profile"
+    },
+    "library": {
+        "title": "Library",
+        "subtitle": "Your books and news feed"
+    },
+    "read": {
+        "title": "Speed Reader",
+        "modes": "RSVP • Bionic • Chunking"
+    },
+    "training": {
+        "title": "Training Lab",
+        "subtitle": "Eye exercises and focus drills"
+    },
+    "profile": {
+        "title": "Profile",
+        "subtitle": "Settings & Analytics"
+    },
+    "rsvp": {
+        "aiGenerated": "AI Generated",
+        "wordProgress": "Word {{current}} / {{total}}"
+    }
+}

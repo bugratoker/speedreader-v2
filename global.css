@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom glassmorphism utilities */
+@layer utilities {
+  .glass {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .glass-elevated {
+    background-color: rgba(20, 20, 20, 0.8);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .glow-primary {
+    shadow-color: #00FFFF;
+    shadow-offset: 0px 0px;
+    shadow-opacity: 0.3;
+    shadow-radius: 12px;
+  }
+  
+  .glow-secondary {
+    shadow-color: #8A2BE2;
+    shadow-offset: 0px 0px;
+    shadow-opacity: 0.3;
+    shadow-radius: 12px;
+  }
+}

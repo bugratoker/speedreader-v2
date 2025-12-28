@@ -1,0 +1,93 @@
+{
+    "common": {
+        "next": "İleri",
+        "back": "Geri",
+        "continue": "Devam",
+        "startJourney": "Yolculuğa Başla",
+        "loading": "Yükleniyor...",
+        "wpm": "DPM",
+        "words": "kelime",
+        "seconds": "saniye",
+        "minute": "dakika",
+        "skip": "Atla",
+        "done": "Tamam"
+    },
+    "welcome": {
+        "slide1": {
+            "headline": "Sınırları Aş",
+            "subheadline": "RSVP ile en hızlı okuma yöntemini öğren"
+        },
+        "slide2": {
+            "headline": "Görünmeyeni Oku",
+            "subheadline": "Yapay zeka, okurken sinematik görseller oluşturur",
+            "every300Words": "Her 300 Kelimede",
+            "cinematicVisuals": "Sinematik görseller okumanızı canlandırır"
+        },
+        "slide3": {
+            "headline": "Odağını Geliştir",
+            "subheadline": "Günlük antrenman, haber özetleri ve alışkanlık takibi",
+            "trainingLab": "Antrenman Merkezi",
+            "trainingLabDesc": "Göz egzersizleri ve odak oyunları",
+            "dailyNews": "Günlük Haberler",
+            "dailyNewsDesc": "Yapay zeka destekli hızlı okuma",
+            "streakSystem": "Seri Sistemi",
+            "streakSystemDesc": "Günlük okuma alışkanlığını oluştur"
+        }
+    },
+    "assessment": {
+        "title": "Hız Değerlendirmesi",
+        "subtitle": "Okuma hızınızı ölçelim",
+        "instructions": "Aşağıdaki metni normal hızınızda okuyun. Bitirdiğinizde dokunun.",
+        "tapToStart": "Başlamak için Dokun",
+        "reading": "Okuyorsunuz...",
+        "tapWhenDone": "Bitirdiğinizde dokunun",
+        "timeRemaining": "Kalan süre",
+        "calculating": "Hızınız hesaplanıyor...",
+        "yourSpeed": "Okuma Hızınız",
+        "wordsPerMinute": "dakikada kelime",
+        "comparison": {
+            "faster": "Ortalamadan %{{percent}} daha hızlı okuyorsunuz!",
+            "slower": "Ortalamadan %{{percent}} daha yavaş okuyorsunuz",
+            "average": "Ortalama bir hızda okuyorsunuz"
+        },
+        "averageWpm": "Ortalama okuyucu: 200-250 DPM",
+        "continueButton": "Devam Et",
+        "retakeButton": "Tekrar Dene"
+    },
+    "home": {
+        "title": "Hızlı Okuyucu",
+        "subtitle": "Okumayı sinematik bir deneyime dönüştür",
+        "welcomeCard": "Speed Reader AI'ya Hoş Geldiniz",
+        "features": "RSVP • Biyonik Okuma • Yapay Zeka Görselleştirme",
+        "aiFeatures": "Yapay Zeka Özellikleri",
+        "aiDescription": "Her 300 kelimede sinematik görsel oluşturma",
+        "readingProgress": "Okuma İlerlemesi"
+    },
+    "tabs": {
+        "home": "Ana Sayfa",
+        "library": "Kütüphane",
+        "read": "Oku",
+        "training": "Antrenman",
+        "profile": "Profil"
+    },
+    "library": {
+        "title": "Kütüphane",
+        "subtitle": "Kitaplarınız ve haber akışınız"
+    },
+    "read": {
+        "title": "Hızlı Okuyucu",
+        "modes": "RSVP • Biyonik • Parçalama"
+    },
+    "training": {
+        "title": "Antrenman Merkezi",
+        "subtitle": "Göz egzersizleri ve odak çalışmaları"
+    },
+    "profile": {
+        "title": "Profil",
+        "subtitle": "Ayarlar ve Analizler"
+    },
+    "rsvp": {
+        "aiGenerated": "Yapay Zeka Üretimi",
+        "wordProgress": "Kelime {{current}} / {{total}}"
+    }
+}

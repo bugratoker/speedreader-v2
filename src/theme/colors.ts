@@ -40,4 +40,7 @@ export const colors = {
     transparent: 'transparent',
 } as const;
 
+
 export type ColorKey = keyof typeof colors;
+export type ThemeColors = Record<ColorKey, string>;
+

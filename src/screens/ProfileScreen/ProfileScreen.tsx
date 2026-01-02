@@ -1,14 +1,14 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { User, Globe } from 'lucide-react-native';
+import { User, Globe, Moon, Sun } from 'lucide-react-native';
 import { useTheme } from '../../theme';
 import { LanguageSelector } from '../../components/LanguageSelector';
 
 export const ProfileScreen: React.FC = () => {
     const { t } = useTranslation();
-    const { colors, spacing, fontFamily, fontSize, borderRadius, glows } = useTheme();
+    const { colors, spacing, fontFamily, fontSize, borderRadius, glows, mode, toggleTheme } = useTheme();
     const insets = useSafeAreaInsets();
 
     return (
@@ -80,8 +80,45 @@ export const ProfileScreen: React.FC = () => {
                             marginBottom: spacing.md,
                         }}
                     >
-                        SETTINGS
+                        {t('profile.settings')}
                     </Text>
+
+                    {/* Theme Setting */}
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            paddingVertical: spacing.sm,
+                            borderBottomWidth: 1,
+                            borderBottomColor: colors.glassBorder,
+                            marginBottom: spacing.sm,
+                        }}
+                    >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                            {mode === 'dark' ? (
+                                <Moon size={20} color={colors.textMuted} />
+                            ) : (
+                                <Sun size={20} color={colors.textMuted} />
+                            )}
+                            <Text
+                                style={{
+                                    fontFamily: fontFamily.uiRegular,
+                                    fontSize: fontSize.md,
+                                    color: colors.text,
+                                }}
+                            >
+                                {t('profile.appearance')}
+                            </Text>
+                        </View>
+                        <Switch
+                            value={mode === 'dark'}
+                            onValueChange={toggleTheme}
+                            trackColor={{ false: colors.surfaceElevated, true: colors.primaryDim }}
+                            thumbColor={colors.white}
+                            ios_backgroundColor={colors.surfaceElevated}
+                        />
+                    </View>
 
                     {/* Language Setting */}
                     <View
@@ -101,7 +138,7 @@ export const ProfileScreen: React.FC = () => {
                                     color: colors.text,
                                 }}
                             >
-                                Language
+                                {t('profile.language')}
                             </Text>
                         </View>
                         <LanguageSelector />

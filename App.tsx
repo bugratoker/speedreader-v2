@@ -9,6 +9,7 @@ import { PlayfairDisplay_400Regular, PlayfairDisplay_700Bold } from '@expo-googl
 import { AppProvider } from './src/store';
 import { ThemeProvider, colors } from './src/theme';
 import { RootNavigator } from './src/navigation';
+import { ThemedStatusBar } from './src/components/ThemedStatusBar';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -36,7 +37,7 @@ export default function App() {
           <NavigationContainer>
             <RootNavigator />
           </NavigationContainer>
-          <StatusBar style="light" />
+          <ThemedStatusBar />
         </AppProvider>
       </ThemeProvider>
     </SafeAreaProvider>

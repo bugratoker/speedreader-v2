@@ -8,7 +8,8 @@ import {
     TextStyle,
     TouchableOpacityProps,
 } from 'react-native';
-import { colors, fontSize, fontWeight, spacing, borderRadius } from '../../theme';
+import { fontSize, fontWeight, spacing, borderRadius } from '../../theme';
+import { useTheme } from '../../theme';
 
 interface ButtonProps extends TouchableOpacityProps {
     title: string;
@@ -18,12 +19,7 @@ interface ButtonProps extends TouchableOpacityProps {
     fullWidth?: boolean;
 }
 
-const variantStyles = {
-    primary: { button: { backgroundColor: colors.primary }, text: { color: colors.background } },
-    secondary: { button: { backgroundColor: colors.secondary }, text: { color: colors.white } },
-    outline: { button: { backgroundColor: 'transparent', borderWidth: 2, borderColor: colors.primary }, text: { color: colors.primary } },
-    ghost: { button: { backgroundColor: 'transparent' }, text: { color: colors.primary } },
-};
+// Moved variantStyles and sizeStyles inside component to use theme colors or kept sizeStyles out if no color dependency
 
 const sizeStyles = {
     sm: { button: { paddingVertical: spacing.xs, paddingHorizontal: spacing.sm }, text: { fontSize: fontSize.sm } },
@@ -41,6 +37,14 @@ export const Button: React.FC<ButtonProps> = ({
     style,
     ...props
 }) => {
+    const { colors } = useTheme();
+
+    const variantStyles = {
+        primary: { button: { backgroundColor: colors.primary }, text: { color: colors.background } },
+        secondary: { button: { backgroundColor: colors.secondary }, text: { color: colors.white } },
+        outline: { button: { backgroundColor: 'transparent', borderWidth: 2, borderColor: colors.primary }, text: { color: colors.primary } },
+        ghost: { button: { backgroundColor: 'transparent' }, text: { color: colors.primary } },
+    };
     const isDisabled = disabled || loading;
 
     const buttonStyles: ViewStyle[] = [

@@ -36,23 +36,32 @@
     },
     "assessment": {
         "title": "Hız Değerlendirmesi",
-        "subtitle": "Okuma hızınızı ölçelim",
-        "instructions": "Aşağıdaki metni normal hızınızda okuyun. Bitirdiğinizde dokunun.",
+        "subtitle": "Temel WPM hızınızı belirleyin",
+        "instructions": "Kelimeler tek tek görünecektir. Hızı rahat hissedene kadar ayarlayın. Bu sizin temel okuma hızınız olacaktır.",
+        "hint": "Okurken hızı rahat olana kadar ayarlayın",
         "tapToStart": "Başlamak için Dokun",
-        "reading": "Okuyorsunuz...",
-        "tapWhenDone": "Bitirdiğinizde dokunun",
-        "timeRemaining": "Kalan süre",
-        "calculating": "Hızınız hesaplanıyor...",
-        "yourSpeed": "Okuma Hızınız",
-        "wordsPerMinute": "dakikada kelime",
-        "comparison": {
-            "faster": "Ortalamadan %{{percent}} daha hızlı okuyorsunuz!",
-            "slower": "Ortalamadan %{{percent}} daha yavaş okuyorsunuz",
-            "average": "Ortalama bir hızda okuyorsunuz"
-        },
-        "averageWpm": "Ortalama okuyucu: 200-250 DPM",
+        "wordsPerMinute": "DAKİKADA KELİME",
+        "averageWpm": "Ortalama yetişkin: 225 WPM",
+        "retakeButton": "Tekrar Dene",
         "continueButton": "Devam Et",
-        "retakeButton": "Tekrar Dene"
+        "comparison": {
+            "average": "Ortalama hızda okuyorsunuz",
+            "faster": "Ortalamadan %{{percent}} daha hızlı",
+            "slower": "Ortalamadan %{{percent}} daha yavaş"
+        },
+        "skill": {
+            "beginner": "Başlangıç",
+            "belowAverage": "Ortalama Altı",
+            "average": "Ortalama",
+            "fastReader": "Hızlı Okuyucu",
+            "speedReader": "Usta Okuyucu"
+        }
+    },
+    "aiCard": {
+        "label": "Yapay Zeka",
+        "title": "Her 300 Kelimede",
+        "subtitle": "Sinematik görseller okumanızı canlandırır",
+        "progress": "Kelime {{current}} / {{total}}"
     },
     "home": {
         "title": "Hızlı Okuyucu",
@@ -80,14 +89,246 @@
     },
     "training": {
         "title": "Antrenman Merkezi",
-        "subtitle": "Göz egzersizleri ve odak çalışmaları"
+        "subtitle": "Göz egzersizleri ve odak çalışmaları",
+        "headerSubtitle": "Hızlı Okuma için Nöro-Oküler Koşullandırma",
+        "back": "Geri",
+        "recommendedFlow": "Önerilen Akış",
+        "recommendedFlowText": "Göz Esnetme → Schulte → Saccadic → Periferik",
+        "musclePreConditioning": "Kas Ön Koşullandırma",
+        "perceptualProcessing": "Algısal İşleme",
+        "trainingProtocol": "Antrenman Protokolü",
+        "trainingProtocolText": "Günde 5-10 dakika pratik yapın",
+        "trainingProtocolTextSuffix": "okuma seanslarından önce. Araştırmalar, 2-3 haftalık düzenli antrenmandan sonra periferik görüşte ve göz hareket hızında önemli gelişmeler olduğunu göstermektedir.",
+        "exercises": {
+            "schulte": {
+                "title": "Schulte Tablosu",
+                "subtitle": "Dikkat Stabilitesi Eğitimi",
+                "description": "Gözlerinizi merkez noktadak sabit tutarak sayıları bulun",
+                "academicBasis": "Görsel arama ve dikkat stabilitesini geliştirir"
+            },
+            "saccadic": {
+                "title": "Sakkadik Atlamalar",
+                "subtitle": "Anti-Gerileme ve Geri Dönüş Eğitimi",
+                "description": "Hassas satır atlamaları için hızlı göz hareketi eğitimi",
+                "academicBasis": "Geri Dönüşleri eğitir, gerilemeleri en aza indirir"
+            },
+            "eyestretch": {
+                "title": "Sonsuzluk Esnetmesi",
+                "subtitle": "Oküler Esneklik Eğitimi",
+                "description": "Altı dış göz kasını çalıştırmak için Tembel-8 desenini takip edin",
+                "academicBasis": "Yumuşak takip ve siliyer kas esnekliğini geliştirir"
+            },
+            "peripheral": {
+                "title": "Periferik Yakalama",
+                "subtitle": "Parafoveal İşleme Eğitimi",
+                "description": "Sadece çevresel görüşü kullanarak kelimeleri tanımlayın",
+                "academicBasis": "Daha hızlı okuma için parafoveal alanı genişletir"
+            }
+        },
+        "difficulty": {
+            "warmUp": "Isınma",
+            "training": "Antrenman",
+            "challenge": "Meydan Okuma"
+        }
     },
     "profile": {
         "title": "Profil",
-        "subtitle": "Ayarlar ve Analizler"
+        "subtitle": "Ayarlar ve Analizler",
+        "settings": "AYARLAR",
+        "appearance": "Görünüm",
+        "language": "Dil"
     },
     "rsvp": {
         "aiGenerated": "Yapay Zeka Üretimi",
         "wordProgress": "Kelime {{current}} / {{total}}"
+    },
+    "games": {
+        "common": {
+            "start": "Başla",
+            "pause": "Duraklat",
+            "restart": "Yeniden Başlat",
+            "playAgain": "Tekrar Oyna",
+            "close": "Kapat",
+            "back": "Geri",
+            "time": "Süre",
+            "best": "En İyi",
+            "score": "Puan",
+            "round": "Tur",
+            "cycles": "döngü",
+            "jumps": "atlama",
+            "grid": "Izgara",
+            "directions": {
+                "center": "Merkez",
+                "right": "Sağ",
+                "left": "Sol",
+                "top": "Üst",
+                "bottom": "Alt",
+                "topRight": "Sağ Üst",
+                "bottomRight": "Sağ Alt",
+                "topLeft": "Sol Üst",
+                "bottomLeft": "Sol Alt"
+            }
+        },
+        "schulte": {
+            "target": "HEDEF",
+            "find": "Bul",
+            "complete": "Tamamlandı",
+            "relaxed": "Rahat",
+            "strictFixation": "Sıkı Odaklanma",
+            "newRecord": "YENİ REKOR!",
+            "ranks": {
+                "sPlus": "İlahi Hız! ⚡",
+                "s": "Elit Görüş! 👁️",
+                "a": "Mükemmel Odak! 🔥",
+                "b": "Harika İş! 🚀",
+                "c": "İyi Başlangıç! 👍",
+                "d": "Çalışmaya Devam! 💪"
+            }
+        },
+        "saccadic": {
+            "instructions": "Gözleri anında noktalar arasında zıplatın. Baş sabit, taşma yok!",
+            "interval": "aralık",
+            "getReady": "Zıplamaya hazır olun!",
+            "horizontal": "Yatay",
+            "vertical": "Dikey",
+            "trainingTip": "Bu, daha hızlı satır okuma için 'Geri Dönüşleri' eğitir ve istemsiz gerilemeleri azaltır.",
+            "greatJob": "Harika Sakkadlar!",
+            "completeMsg": "Anti-gerileme eğitimi tamamlandı ✓",
+            "speed": {
+                "slow": "Yavaş",
+                "medium": "Orta",
+                "fast": "Hızlı"
+            }
+        },
+        "eyestretch": {
+            "instructions": "Noktayı yumuşakça takip edin. Başı sabit tutun, sadece gözleri hareket ettirin.",
+            "titleComplete": "Gözler Esnetildi!",
+            "completeMsg": "Dış göz kasları aktive edildi ✓",
+            "speed": {
+                "slow": "Rahat",
+                "medium": "Antrenman",
+                "fast": "Meydan Okuma"
+            },
+            "speedDesc": {
+                "slow": "Nazik esnetme",
+                "medium": "Standart tempo",
+                "fast": "Hızlı takip"
+            }
+        },
+        "peripheral": {
+            "instructions": "Gözleri ⊕ merkeze kilitleyin. Kelimeleri aşırı çevresel görüşte yakalayın.",
+            "eyesLocked": "Gözler merkeze KİLİTLİ!",
+            "question": "Hangi kelimeyi yakaladınız?",
+            "selectDifficulty": "Zorluk Seçin",
+            "bestStreak": "En iyi seri: Üst üste {{count}}",
+            "readyDesc": "Kelimeler AŞIRI uçlarda yanıp söner. Gözleri merkeze kilitli tutun. Benzer görünen seçeneklerden birini seçin.",
+            "difficulty": {
+                "beginner": "Başlangıç",
+                "intermediate": "Orta",
+                "advanced": "İleri",
+                "expert": "Uzman"
+            },
+            "difficultyDesc": "yanıp sönme • {{rounds}} tur",
+            "performance": {
+                "elite": "Elit çevresel görüş!",
+                "excellent": "Mükemmel parafoveal alan!",
+                "good": "İyi çevresel farkındalık!",
+                "keepGoing": "Çalışmaya devam edin, gelişiyorsunuz!",
+                "challenging": "Bu zorlu! Daha fazla pratik yapın."
+            },
+            "wordGroups": [
+                {
+                    "target": "ODAK",
+                    "distractors": [
+                        "ADAK",
+                        "ODA",
+                        "UDAK"
+                    ]
+                },
+                {
+                    "target": "KEDİ",
+                    "distractors": [
+                        "YEDİ",
+                        "KATI",
+                        "KEMİ"
+                    ]
+                },
+                {
+                    "target": "OKUL",
+                    "distractors": [
+                        "AKIL",
+                        "OĞUL",
+                        "ÖKÜZ"
+                    ]
+                },
+                {
+                    "target": "ELMA",
+                    "distractors": [
+                        "ALMA",
+                        "ELLA",
+                        "EMMA"
+                    ]
+                },
+                {
+                    "target": "HAVA",
+                    "distractors": [
+                        "KAVA",
+                        "DAVA",
+                        "YAVA"
+                    ]
+                },
+                {
+                    "target": "KAPI",
+                    "distractors": [
+                        "YAPI",
+                        "SAPI",
+                        "KATI"
+                    ]
+                },
+                {
+                    "target": "MASA",
+                    "distractors": [
+                        "KASA",
+                        "YASA",
+                        "TASA"
+                    ]
+                },
+                {
+                    "target": "SAAT",
+                    "distractors": [
+                        "VAAT",
+                        "NAAT",
+                        "SAFT"
+                    ]
+                },
+                {
+                    "target": "KITA",
+                    "distractors": [
+                        "RİTA",
+                        "ÇITA",
+                        "KINA"
+                    ]
+                },
+                {
+                    "target": "DERS",
+                    "distractors": [
+                        "TERS",
+                        "PERS",
+                        "DERT"
+                    ]
+                }
+            ]
+        },
+        "academic": {
+            "schulte": {
+                "title": "Yararlı Görüş Alanı (UFOV)",
+                "description": "Schulte tablolarının temelini oluşturan 'Yararlı Görüş Alanı' (UFOV) antrenmanlarının, beynin çevresel bilgiyi işleme hızını ve dikkat kalitesini artırdığını kanıtlıyor.\n\n📖 Ball, K. & Owsley, C. (1993). 'The useful field of view: A new technique for evaluating age-related declines in visual attention.' Psychology and Aging.\n\nBu araştırma, düzenli UFOV antrenmanının görsel dikkat alanını genişlettiğini ve çevresel nesneleri %35'e kadar daha hızlı işleyebildiğini gösteriyor."
+            },
+            "saccadic": {
+                "title": "Okumada Sakkadik Göz Hareketleri",
+                "description": "Profesör Keith Rayner tarafından yapılan bu çığır açıcı çalışma, okuma hızını sınırlayan en büyük etkenin gözlerin yanlış sıçramaları (saccades) ve geriye dönüşler (regressions) olduğunu bilimsel olarak ispatlıyor.\n\n📖 Rayner, K. (1998). 'Eye movements in reading and information processing: 20 years of research.' Psychological Bulletin.\n\nBu antrenman, 'return sweep' hareketlerini (satır sonundan yeni satır başına geçiş) hedefleyerek regresyonları %40'a kadar azaltır ve okuma akıcılığını artırır."
+            },
+            "learnMore": "Daha Fazla Bilgi"
+        }
     }
 }

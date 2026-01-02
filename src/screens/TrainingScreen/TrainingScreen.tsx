@@ -4,8 +4,9 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, PanResponder } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme';
 import {
     Grid3X3,
@@ -121,6 +122,7 @@ const ExerciseCard: React.FC<ExerciseCardProps> = ({
 };
 
 export const TrainingScreen: React.FC = () => {
+    const { t } = useTranslation();
     const { colors, spacing, fontFamily, fontSize, borderRadius, glows } = useTheme();
     const insets = useSafeAreaInsets();
     const [activeExercise, setActiveExercise] = useState<ExerciseType>(null);
@@ -129,24 +131,53 @@ export const TrainingScreen: React.FC = () => {
         console.log(`${exerciseName} completed`);
     };
 
+    // Swipe Gesture Handler
+    const panResponder = React.useRef(
+        PanResponder.create({
+            onMoveShouldSetPanResponder: (evt, gestureState) => {
+                // Trigger only on horizontal swipe from left edge (start zone < 50px)
+                // and if movement is horizontal > vertical
+                return (
+                    gestureState.moveX > 0 && // Moving right
+                    gestureState.dx > 20 && // Moved at least 20px
+                    Math.abs(gestureState.dy) < 30 && // Mostly horizontal
+                    evt.nativeEvent.pageX < 60 // Started near left edge
+                );
+            },
+            onPanResponderRelease: (evt, gestureState) => {
+                if (gestureState.dx > 50 && Math.abs(gestureState.vy) > 0.3) {
+                    setActiveExercise(null);
+                }
+            },
+        })
+    ).current;
+
     if (activeExercise) {
         return (
-            <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, paddingVertical: spacing.md }}>
+            <View
+                style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}
+                {...panResponder.panHandlers}
+            >
+                {/* Minimalist Header */}
+                <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: spacing.md,
+                    paddingVertical: spacing.md,
+                    zIndex: 10
+                }}>
                     <Pressable
                         onPress={() => setActiveExercise(null)}
                         style={({ pressed }) => ({
-                            flexDirection: 'row',
+                            width: 44,
+                            height: 44,
                             alignItems: 'center',
-                            opacity: pressed ? 0.7 : 1,
-                            backgroundColor: colors.surface,
-                            paddingHorizontal: spacing.md,
-                            paddingVertical: spacing.sm,
-                            borderRadius: borderRadius.lg,
+                            justifyContent: 'center',
+                            borderRadius: 22,
+                            backgroundColor: pressed ? colors.surfaceElevated : 'transparent',
                         })}
                     >
-                        <ChevronLeft size={20} color={colors.primary} strokeWidth={2} />
-                        <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.md, color: colors.primary }}>Back</Text>
+                        <ChevronLeft size={28} color={colors.primary} strokeWidth={2.5} />
                     </Pressable>
                 </View>
 
@@ -157,11 +188,11 @@ export const TrainingScreen: React.FC = () => {
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <Grid3X3 size={24} color={colors.primary} strokeWidth={2} />
                                     <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize['2xl'], color: colors.text, marginLeft: spacing.sm }}>
-                                        Schulte Table
+                                        {t('training.exercises.schulte.title')}
                                     </Text>
                                 </View>
                                 <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.sm, color: colors.textMuted, textAlign: 'center', marginTop: spacing.xs }}>
-                                    Attentional Stability Training
+                                    {t('training.exercises.schulte.subtitle')}
                                 </Text>
                             </View>
                             <SchulteTable onComplete={(_time: number) => handleExerciseComplete('Schulte')} />
@@ -174,11 +205,11 @@ export const TrainingScreen: React.FC = () => {
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <Zap size={24} color={colors.secondary} strokeWidth={2} />
                                     <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize['2xl'], color: colors.text, marginLeft: spacing.sm }}>
-                                        Saccadic Jumps
+                                        {t('training.exercises.saccadic.title')}
                                     </Text>
                                 </View>
                                 <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.sm, color: colors.textMuted, textAlign: 'center', marginTop: spacing.xs }}>
-                                    Anti-Regression & Return Sweep Training
+                                    {t('training.exercises.saccadic.subtitle')}
                                 </Text>
                             </View>
                             <SaccadicJumps onComplete={(_jumps: number) => handleExerciseComplete('Saccadic')} />
@@ -191,11 +222,11 @@ export const TrainingScreen: React.FC = () => {
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <Infinity size={24} color={colors.secondary} strokeWidth={2} />
                                     <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize['2xl'], color: colors.text, marginLeft: spacing.sm }}>
-                                        Infinity Stretch
+                                        {t('training.exercises.eyestretch.title')}
                                     </Text>
                                 </View>
                                 <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.sm, color: colors.textMuted, textAlign: 'center', marginTop: spacing.xs }}>
-                                    Ocular Flexibility Training
+                                    {t('training.exercises.eyestretch.subtitle')}
                                 </Text>
                             </View>
                             <EyeStretch onComplete={(_cycles: number) => handleExerciseComplete('EyeStretch')} />
@@ -208,11 +239,11 @@ export const TrainingScreen: React.FC = () => {
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <Focus size={24} color={colors.primary} strokeWidth={2} />
                                     <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize['2xl'], color: colors.text, marginLeft: spacing.sm }}>
-                                        Peripheral Catch
+                                        {t('training.exercises.peripheral.title')}
                                     </Text>
                                 </View>
                                 <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.sm, color: colors.textMuted, textAlign: 'center', marginTop: spacing.xs }}>
-                                    Parafoveal Processing Training
+                                    {t('training.exercises.peripheral.subtitle')}
                                 </Text>
                             </View>
                             <PeripheralCatch onComplete={(_score: number, _total: number) => handleExerciseComplete('Peripheral')} />
@@ -231,11 +262,11 @@ export const TrainingScreen: React.FC = () => {
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Dumbbell size={28} color={colors.secondary} strokeWidth={1.5} />
                         <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize['3xl'], color: colors.text, marginLeft: spacing.sm }}>
-                            Training Lab
+                            {t('training.title')}
                         </Text>
                     </View>
                     <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.md, color: colors.textMuted, marginTop: spacing.xs }}>
-                        Neuro-Ocular Conditioning for Speed Reading
+                        {t('training.headerSubtitle')}
                     </Text>
                 </View>
 
@@ -255,10 +286,10 @@ export const TrainingScreen: React.FC = () => {
                     <Sparkles size={20} color={colors.secondary} strokeWidth={2} />
                     <View style={{ marginLeft: spacing.sm, flex: 1 }}>
                         <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.sm, color: colors.secondary }}>
-                            Recommended Flow
+                            {t('training.recommendedFlow')}
                         </Text>
                         <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted, marginTop: 2 }}>
-                            Eye Stretch → Schulte → Saccadic → Peripheral
+                            {t('training.recommendedFlowText')}
                         </Text>
                     </View>
                 </View>
@@ -268,29 +299,29 @@ export const TrainingScreen: React.FC = () => {
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
                         <Eye size={18} color={colors.primary} strokeWidth={2} />
                         <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.md, color: colors.primary, marginLeft: spacing.xs }}>
-                            Muscle Pre-conditioning
+                            {t('training.musclePreConditioning')}
                         </Text>
                     </View>
 
                     <ExerciseCard
-                        title="Infinity Stretch"
-                        description="Follow the Lazy-8 pattern to exercise all six extraocular muscles"
-                        academicBasis="Improves smooth pursuit and ciliary muscle flexibility"
+                        title={t('training.exercises.eyestretch.title')}
+                        description={t('training.exercises.eyestretch.description')}
+                        academicBasis={t('training.exercises.eyestretch.academicBasis')}
                         icon={<Infinity size={26} color={colors.secondary} strokeWidth={1.5} />}
                         accentColor={colors.secondary}
                         glowColor={colors.secondaryGlow}
-                        difficulty="Warm-up"
+                        difficulty={t('training.difficulty.warmUp') as any}
                         onPress={() => setActiveExercise('eyestretch')}
                     />
 
                     <ExerciseCard
-                        title="Schulte Table"
-                        description="Find numbers while keeping gaze fixed on center point"
-                        academicBasis="Improves visual search and attentional stability"
+                        title={t('training.exercises.schulte.title')}
+                        description={t('training.exercises.schulte.description')}
+                        academicBasis={t('training.exercises.schulte.academicBasis')}
                         icon={<Grid3X3 size={26} color={colors.primary} strokeWidth={1.5} />}
                         accentColor={colors.primary}
                         glowColor={colors.primaryGlow}
-                        difficulty="Training"
+                        difficulty={t('training.difficulty.training') as any}
                         onPress={() => setActiveExercise('schulte')}
                     />
                 </View>
@@ -300,29 +331,29 @@ export const TrainingScreen: React.FC = () => {
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
                         <Brain size={18} color={colors.secondary} strokeWidth={2} />
                         <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.md, color: colors.secondary, marginLeft: spacing.xs }}>
-                            Perceptual Processing
+                            {t('training.perceptualProcessing')}
                         </Text>
                     </View>
 
                     <ExerciseCard
-                        title="Saccadic Jumps"
-                        description="Rapid eye movement training for precise line-to-line jumps"
-                        academicBasis="Trains Return Sweeps, minimizes regressions"
+                        title={t('training.exercises.saccadic.title')}
+                        description={t('training.exercises.saccadic.description')}
+                        academicBasis={t('training.exercises.saccadic.academicBasis')}
                         icon={<Zap size={26} color={colors.secondary} strokeWidth={1.5} />}
                         accentColor={colors.secondary}
                         glowColor={colors.secondaryGlow}
-                        difficulty="Training"
+                        difficulty={t('training.difficulty.training') as any}
                         onPress={() => setActiveExercise('saccadic')}
                     />
 
                     <ExerciseCard
-                        title="Peripheral Catch"
-                        description="Identify words using only peripheral vision"
-                        academicBasis="Expands parafoveal span for faster reading"
+                        title={t('training.exercises.peripheral.title')}
+                        description={t('training.exercises.peripheral.description')}
+                        academicBasis={t('training.exercises.peripheral.academicBasis')}
                         icon={<Focus size={26} color={colors.primary} strokeWidth={1.5} />}
                         accentColor={colors.primary}
                         glowColor={colors.primaryGlow}
-                        difficulty="Challenge"
+                        difficulty={t('training.difficulty.challenge') as any}
                         onPress={() => setActiveExercise('peripheral')}
                     />
                 </View>
@@ -341,12 +372,11 @@ export const TrainingScreen: React.FC = () => {
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
                         <Trophy size={18} color={colors.secondary} strokeWidth={2} />
                         <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.sm, color: colors.secondary, marginLeft: spacing.xs }}>
-                            Training Protocol
+                            {t('training.trainingProtocol')}
                         </Text>
                     </View>
                     <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.sm, color: colors.textMuted, lineHeight: fontSize.sm * 1.6 }}>
-                        Practice for 5-10 minutes daily <Text style={{ color: colors.text }}>before</Text> reading sessions.
-                        Research shows significant improvement in peripheral vision and eye movement speed after 2-3 weeks of consistent training.
+                        {t('training.trainingProtocolText')} <Text style={{ color: colors.text }}>before</Text> {t('training.trainingProtocolTextSuffix')}
                     </Text>
                 </View>
             </ScrollView>

@@ -1,28 +1,31 @@
 /**
- * Custom Tab Bar Component
- * Features: Deep Nebula styling, center action button with glow
- * Note: Using basic animations compatible with Expo Go
+ * Aesthetic Tab Bar - "Floating Icons" Design
+ * Ultra-minimal: Transparent background, floating icons, center FAB
  */
 
-import React, { useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, Platform } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Home, Library, Zap, Dumbbell, User } from 'lucide-react-native';
-import { colors, spacing, borderRadius, glows } from '../../theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { spacing } from '../../theme';
+import { useTheme } from '../../theme';
+import { ScalePressable } from '../ScalePressable';
 
 interface TabIconProps {
     route: string;
     isFocused: boolean;
-    size?: number;
 }
 
-const TabIcon: React.FC<TabIconProps> = ({ route, isFocused, size = 24 }) => {
-    const iconColor = isFocused ? colors.primary : colors.textMuted;
+const TabIcon: React.FC<TabIconProps> = ({ route, isFocused }) => {
+    const { colors } = useTheme();
+    const iconColor = isFocused ? colors.text : colors.textMuted;
+    const size = 24;
 
     const iconProps = {
         size,
         color: iconColor,
-        strokeWidth: isFocused ? 2.5 : 2,
+        strokeWidth: isFocused ? 2.2 : 1.5,
     };
 
     switch (route) {
@@ -31,7 +34,7 @@ const TabIcon: React.FC<TabIconProps> = ({ route, isFocused, size = 24 }) => {
         case 'Library':
             return <Library {...iconProps} />;
         case 'Read':
-            return <Zap size={28} color={colors.background} strokeWidth={2.5} />;
+            return <Zap size={22} color="#FFFFFF" strokeWidth={2.5} />;
         case 'Training':
             return <Dumbbell {...iconProps} />;
         case 'Profile':
@@ -49,61 +52,66 @@ interface TabItemProps {
 }
 
 const TabItem: React.FC<TabItemProps> = ({ route, isFocused, onPress, onLongPress }) => {
-    const [scaleAnim] = useState(new Animated.Value(1));
+    const { colors, mode } = useTheme();
 
-    const handlePressIn = () => {
-        Animated.spring(scaleAnim, {
-            toValue: 0.9,
-            useNativeDriver: true,
-        }).start();
-    };
-
-    const handlePressOut = () => {
-        Animated.spring(scaleAnim, {
-            toValue: 1,
-            useNativeDriver: true,
-        }).start();
-    };
-
-    // Center "Read" button with special styling
+    // Center "Read" FAB - floating action button
     if (route === 'Read') {
         return (
-            <TouchableOpacity
-                onPress={onPress}
-                onLongPress={onLongPress}
-                onPressIn={handlePressIn}
-                onPressOut={handlePressOut}
-                style={styles.centerButton}
-                activeOpacity={0.8}
-            >
-                <Animated.View style={[styles.centerButtonInner, { transform: [{ scale: scaleAnim }] }]}>
-                    <TabIcon route={route} isFocused={true} />
-                </Animated.View>
-            </TouchableOpacity>
+            <View style={styles.fabContainer}>
+                <ScalePressable
+                    onPress={onPress}
+                    onLongPress={onLongPress}
+                    scaleTo={0.88}
+                >
+                    <LinearGradient
+                        colors={[colors.primary, colors.secondary]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.fabButton}
+                    >
+                        <TabIcon route={route} isFocused={true} />
+                    </LinearGradient>
+                </ScalePressable>
+            </View>
         );
     }
 
+    // Floating icon with subtle glow when active
     return (
-        <TouchableOpacity
+        <ScalePressable
             onPress={onPress}
             onLongPress={onLongPress}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
             style={styles.tabItem}
-            activeOpacity={0.7}
+            scaleTo={0.9}
         >
-            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+            <View style={[
+                styles.iconButton,
+                isFocused && {
+                    backgroundColor: mode === 'dark'
+                        ? 'rgba(255,255,255,0.1)'
+                        : 'rgba(0,0,0,0.02)',
+                }
+            ]}>
                 <TabIcon route={route} isFocused={isFocused} />
-            </Animated.View>
-            {isFocused && <View style={styles.activeIndicator} />}
-        </TouchableOpacity>
+            </View>
+        </ScalePressable>
     );
 };
 
 export const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
+    const { colors, mode } = useTheme();
+
     return (
         <View style={styles.container}>
-            <View style={styles.tabBar}>
+            {/* Subtle gradient fade at bottom for depth */}
+            <LinearGradient
+                colors={['transparent', mode === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.3)']}
+                style={styles.gradientFade}
+                pointerEvents="none"
+            />
+
+            {/* Floating icons row */}
+            <View style={styles.tabRow}>
                 {state.routes.map((route, index) => {
                     const isFocused = state.index === index;
 
@@ -147,46 +155,50 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        paddingHorizontal: spacing.md,
-        paddingBottom: spacing.lg,
     },
-    tabBar: {
+    gradientFade: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 120,
+    },
+    tabRow: {
         flexDirection: 'row',
-        backgroundColor: colors.surface,
-        borderRadius: borderRadius.bento,
-        borderWidth: 1,
-        borderColor: colors.glassBorder,
-        height: 64,
-        alignItems: 'center',
+        alignItems: 'flex-end',
         justifyContent: 'space-around',
-        paddingHorizontal: spacing.sm,
+        paddingHorizontal: spacing.lg,
+        paddingBottom: Platform.OS === 'ios' ? 28 : 16,
+        height: 80,
     },
     tabItem: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        height: '100%',
-        position: 'relative',
     },
-    activeIndicator: {
-        position: 'absolute',
-        bottom: 8,
-        width: 4,
-        height: 4,
-        borderRadius: 2,
-        backgroundColor: colors.primary,
-    },
-    centerButton: {
-        marginTop: -30,
-        zIndex: 10,
-    },
-    centerButtonInner: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: colors.primary,
+    iconButton: {
+        width: 48,
+        height: 48,
+        borderRadius: 24, // Perfect circle
         alignItems: 'center',
         justifyContent: 'center',
-        ...glows.primary,
+    },
+    fabContainer: {
+        flex: 1,
+        alignItems: 'center',
+        marginBottom: 16, // Float above other icons
+    },
+    fabButton: {
+        width: 56,
+        height: 56,
+        borderRadius: 28, // Perfect circle
+        alignItems: 'center',
+        justifyContent: 'center',
+        // Elegant shadow
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 12,
     },
 });

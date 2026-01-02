@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Pressable, Dimensions } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -24,30 +25,13 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTheme } from '../../theme';
 import { Play, RotateCcw, Crosshair, CheckCircle, XCircle, Eye, TrendingUp, AlertCircle } from 'lucide-react-native';
+import { HUDOverlay } from './HUDOverlay';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface PeripheralCatchProps {
     onComplete?: (score: number, total: number) => void;
 }
-
-// Word groups with similar-looking distractors for authentic training
-const WORD_GROUPS = [
-    { target: 'FOCUS', distractors: ['LOCUS', 'FOGUS', 'FOUND'] },
-    { target: 'SPEED', distractors: ['SPIED', 'STEED', 'SPELL'] },
-    { target: 'BRAIN', distractors: ['DRAIN', 'BRAID', 'TRAIN'] },
-    { target: 'LEARN', distractors: ['YEARN', 'LEANT', 'LEAN'] },
-    { target: 'THINK', distractors: ['THICK', 'THUNK', 'BLINK'] },
-    { target: 'POWER', distractors: ['TOWER', 'PORER', 'POKER'] },
-    { target: 'SHARP', distractors: ['SHAPE', 'SHARK', 'SHARD'] },
-    { target: 'QUICK', distractors: ['QUIET', 'QUACK', 'THICK'] },
-    { target: 'ALERT', distractors: ['ALTER', 'AVERT', 'ALOFT'] },
-    { target: 'SKILL', distractors: ['SKULL', 'SPILL', 'STILL'] },
-    { target: 'VISION', distractors: ['FUSION', 'VISON', 'VISUAL'] },
-    { target: 'EXPAND', distractors: ['EXPEND', 'EXTEND', 'EXPLND'] },
-    { target: 'DECODE', distractors: ['RECODE', 'ENCODE', 'DECOBE'] },
-    { target: 'ABSORB', distractors: ['ABSORV', 'ADSORB', 'ABSURD'] },
-];
 
 // 8 positions for complete peripheral coverage
 type Position = 'left' | 'right' | 'top' | 'bottom' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
@@ -70,6 +54,11 @@ const DIFFICULTY_CONFIG: Record<Difficulty, {
 const FEEDBACK_TIME = 500;
 
 export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) => {
+    const { t } = useTranslation();
+    const wordGroupsData = t('games.peripheral.wordGroups', { returnObjects: true });
+    // Safety check to ensure wordGroups is an array
+    const wordGroups = Array.isArray(wordGroupsData) ? (wordGroupsData as { target: string; distractors: string[] }[]) : [];
+
     const { colors, spacing, fontFamily, fontSize, borderRadius, glows } = useTheme();
 
     const [gameState, setGameState] = useState<'ready' | 'countdown' | 'playing' | 'feedback' | 'complete'>('ready');
@@ -77,6 +66,9 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
     const [countdown, setCountdown] = useState(3);
     const [currentWord, setCurrentWord] = useState<string | null>(null);
     const [wordPosition, setWordPosition] = useState<Position>('left');
+
+
+
     const [round, setRound] = useState(0);
     const [score, setScore] = useState(0);
     const [showFeedback, setShowFeedback] = useState<'correct' | 'wrong' | null>(null);
@@ -92,10 +84,10 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
     const focusRingScale = useSharedValue(1);
     const focusRingOpacity = useSharedValue(0.3);
 
-    const areaWidth = SCREEN_WIDTH - spacing.md * 4;
-    const areaHeight = 300; // Slightly taller for diagonal positions
+    const areaWidth = SCREEN_WIDTH - spacing.md * 2; // Maximize width (only small padding)
+    const areaHeight = 400; // Taller for better vertical peripheral range
     const totalRounds = DIFFICULTY_CONFIG[difficulty].rounds;
-    const wordFontSize = DIFFICULTY_CONFIG[difficulty].fontSize;
+    const wordFontSize = DIFFICULTY_CONFIG[difficulty].fontSize; // Reset to base size (User feedback: "too big")
 
     // Animate focus ring when waiting for input
     useEffect(() => {
@@ -123,13 +115,13 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
     }, [waitingForInput, focusRingScale, focusRingOpacity]);
 
     const getRandomWordGroup = useCallback(() => {
-        const availableGroups = WORD_GROUPS.filter(g => !usedWords.has(g.target));
+        const availableGroups = wordGroups.filter(g => !usedWords.has(g.target));
         if (availableGroups.length === 0) {
             setUsedWords(new Set()); // Reset if all words used
-            return WORD_GROUPS[Math.floor(Math.random() * WORD_GROUPS.length)];
+            return wordGroups[Math.floor(Math.random() * wordGroups.length)];
         }
         return availableGroups[Math.floor(Math.random() * availableGroups.length)];
-    }, [usedWords]);
+    }, [usedWords, wordGroups]);
 
     const getRandomPosition = useCallback((): Position => {
         // 8 positions for complete peripheral training
@@ -161,7 +153,7 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
 
         // Focus pulse when word appears
         focusPulse.value = withSequence(
-            withTiming(1.1, { duration: 150 }),
+            withTiming(1.3, { duration: 150 }), // Stronger pulse
             withTiming(1, { duration: 150 })
         );
 
@@ -258,129 +250,101 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
         opacity: focusRingOpacity.value,
     }));
 
-    // EXTREME edge positioning for true peripheral training
+    // EXTREME edge positioning for true peripheral training - PUSH TO LIMITS
+    // SAFE ZONES: Ensure word center doesn't clip. Approx 40px padding used.
     const getWordStyle = (position: Position) => {
         const baseStyle = {
             position: 'absolute' as const,
             fontFamily: fontFamily.uiBold,
             fontSize: wordFontSize,
-            color: colors.primary,
-            textShadowColor: colors.primaryGlow,
-            textShadowOffset: { width: 0, height: 0 },
-            textShadowRadius: 8,
+            color: colors.text, // High contrast text
+            textShadowColor: colors.background, // Outline effect for clarity
+            textShadowOffset: { width: 1, height: 1 },
+            textShadowRadius: 1,
         };
 
-        // Position words at EXTREME edges - within 8px of border
+        const edgePadding = 32; // Increased padding to prevent clipping (User feedback)
+        const midX = areaWidth / 2;
+        const midY = areaHeight / 2;
+
+        // Coordinates calculation to ensure no overlap and extreme position
         switch (position) {
             case 'left':
-                return { ...baseStyle, left: 8, top: areaHeight / 2 - 10 };
+                return { ...baseStyle, left: edgePadding, top: midY - 10 };
             case 'right':
-                return { ...baseStyle, right: 8, top: areaHeight / 2 - 10 };
+                return { ...baseStyle, right: edgePadding, top: midY - 10 };
             case 'top':
-                return { ...baseStyle, top: 8, left: areaWidth / 2 - 30 };
+                return { ...baseStyle, top: edgePadding, left: midX - 30 };
             case 'bottom':
-                return { ...baseStyle, bottom: 8, left: areaWidth / 2 - 30 };
+                return { ...baseStyle, bottom: edgePadding, left: midX - 30 };
             case 'topLeft':
-                return { ...baseStyle, top: 12, left: 8 };
+                return { ...baseStyle, top: edgePadding + 10, left: edgePadding };
             case 'topRight':
-                return { ...baseStyle, top: 12, right: 8 };
+                return { ...baseStyle, top: edgePadding + 10, right: edgePadding };
             case 'bottomLeft':
-                return { ...baseStyle, bottom: 12, left: 8 };
+                return { ...baseStyle, bottom: edgePadding + 10, left: edgePadding };
             case 'bottomRight':
-                return { ...baseStyle, bottom: 12, right: 8 };
+                return { ...baseStyle, bottom: edgePadding + 10, right: edgePadding };
         }
     };
 
     const getPositionMarkerStyle = (position: Position) => {
+        // Markers to help user map the space mentally
         const baseStyle = {
             position: 'absolute' as const,
-            width: 6,
-            height: 6,
-            borderRadius: 3,
-            backgroundColor: colors.glassBorder,
-            opacity: 0.25,
+            width: 4,
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: colors.textMuted,
+            opacity: 0.1, // Very subtle
         };
 
+        const midX = areaWidth / 2;
+        const midY = areaHeight / 2;
+        const pad = 20;
+
         switch (position) {
-            case 'left':
-                return { ...baseStyle, left: 12, top: areaHeight / 2 - 3 };
-            case 'right':
-                return { ...baseStyle, right: 12, top: areaHeight / 2 - 3 };
-            case 'top':
-                return { ...baseStyle, top: 12, left: areaWidth / 2 - 3 };
-            case 'bottom':
-                return { ...baseStyle, bottom: 12, left: areaWidth / 2 - 3 };
-            case 'topLeft':
-                return { ...baseStyle, top: 15, left: 12 };
-            case 'topRight':
-                return { ...baseStyle, top: 15, right: 12 };
-            case 'bottomLeft':
-                return { ...baseStyle, bottom: 15, left: 12 };
-            case 'bottomRight':
-                return { ...baseStyle, bottom: 15, right: 12 };
+            case 'left': return { ...baseStyle, left: pad, top: midY - 2 };
+            case 'right': return { ...baseStyle, right: pad, top: midY - 2 };
+            case 'top': return { ...baseStyle, top: pad, left: midX - 2 };
+            case 'bottom': return { ...baseStyle, bottom: pad, left: midX - 2 };
+            case 'topLeft': return { ...baseStyle, top: pad, left: pad };
+            case 'topRight': return { ...baseStyle, top: pad, right: pad };
+            case 'bottomLeft': return { ...baseStyle, bottom: pad, left: pad };
+            case 'bottomRight': return { ...baseStyle, bottom: pad, right: pad };
         }
     };
 
     const getPerformanceMessage = () => {
         const percentage = (score / totalRounds) * 100;
-        if (percentage >= 90) return { emoji: '🏆', text: 'Elite peripheral vision!', color: colors.success };
-        if (percentage >= 75) return { emoji: '🎯', text: 'Excellent parafoveal span!', color: colors.primary };
-        if (percentage >= 60) return { emoji: '👁️', text: 'Good peripheral awareness!', color: colors.secondary };
-        if (percentage >= 40) return { emoji: '📈', text: 'Keep training, improving!', color: colors.textMuted };
-        return { emoji: '💪', text: 'This is challenging! Practice more.', color: colors.textMuted };
+        if (percentage >= 90) return { emoji: '🏆', text: t('games.peripheral.performance.elite'), color: colors.success };
+        if (percentage >= 75) return { emoji: '🎯', text: t('games.peripheral.performance.excellent'), color: colors.primary };
+        if (percentage >= 60) return { emoji: '👁️', text: t('games.peripheral.performance.good'), color: colors.secondary };
+        if (percentage >= 40) return { emoji: '📈', text: t('games.peripheral.performance.keepGoing'), color: colors.textMuted };
+        return { emoji: '💪', text: t('games.peripheral.performance.challenging'), color: colors.textMuted };
     };
 
     const allPositions: Position[] = ['left', 'right', 'top', 'bottom', 'topLeft', 'topRight', 'bottomLeft', 'bottomRight'];
 
     return (
-        <View style={{ alignItems: 'center' }}>
-            {/* Header */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+        <View style={{ alignItems: 'center', width: '100%' }}>
+            {/* Header - Minimalist */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md, paddingHorizontal: spacing.md, width: '100%' }}>
                 <Eye size={18} color={colors.primary} strokeWidth={2} />
                 <Text
                     style={{
                         fontFamily: fontFamily.uiRegular,
                         fontSize: fontSize.sm,
                         color: colors.textMuted,
-                        textAlign: 'center',
                         marginLeft: spacing.sm,
                         flex: 1,
                     }}
                 >
-                    Lock eyes on ⊕ center. Catch words in extreme peripheral vision.
+                    {t('games.peripheral.instructions')}
                 </Text>
             </View>
 
-            {/* Stats Row */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md, gap: spacing.lg }}>
-                <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted }}>Round</Text>
-                    <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.lg, color: colors.text }}>
-                        {round + 1}/{totalRounds}
-                    </Text>
-                </View>
-                <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted }}>Score</Text>
-                    <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.lg, color: colors.success }}>{score}</Text>
-                </View>
-                {streak > 1 && (
-                    <View
-                        style={{
-                            alignItems: 'center',
-                            backgroundColor: colors.primaryGlow,
-                            paddingHorizontal: spacing.sm,
-                            paddingVertical: spacing.xs,
-                            borderRadius: borderRadius.md,
-                        }}
-                    >
-                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.sm, color: colors.primary }}>
-                            🔥 {streak}
-                        </Text>
-                    </View>
-                )}
-            </View>
-
-            {/* Game Area */}
+            {/* Game Area & Controls Container */}
             <View
                 style={{
                     width: areaWidth,
@@ -388,99 +352,76 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
                     backgroundColor: colors.surfaceElevated,
                     borderRadius: borderRadius.bento,
                     borderWidth: 1,
-                    borderColor: colors.glassBorder,
+                    borderColor: 'rgba(255,255,255,0.1)',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    overflow: 'hidden',
+                    overflow: 'hidden', // Contain everything
+                    position: 'relative',
                 }}
             >
-                {/* Countdown Overlay */}
-                {gameState === 'countdown' && (
-                    <View
-                        style={{
-                            position: 'absolute',
-                            zIndex: 20,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backgroundColor: 'rgba(0,0,0,0.92)',
-                            width: '100%',
-                            height: '100%',
-                            borderRadius: borderRadius.bento,
-                        }}
-                    >
-                        <Text
-                            style={{
-                                fontFamily: fontFamily.uiBold,
-                                fontSize: 56,
-                                color: colors.primary,
-                            }}
-                        >
-                            {countdown || 'GO!'}
-                        </Text>
-                        <Text
-                            style={{
-                                fontFamily: fontFamily.uiRegular,
-                                fontSize: fontSize.sm,
-                                color: colors.textMuted,
-                                marginTop: spacing.sm,
-                            }}
-                        >
-                            Eyes LOCKED on center!
-                        </Text>
-                    </View>
-                )}
+                {/* 1. Active Game Elements (Only visible when playing/countdown/feedback) */}
 
-                {/* Position Markers (all 8 positions) */}
+                {/* Position Markers (Always visible for structure, but dimmed) - Z:1 */}
                 {allPositions.map((pos) => (
-                    <View key={pos} style={getPositionMarkerStyle(pos)} />
+                    <View key={pos} style={[getPositionMarkerStyle(pos), { zIndex: 1 }]} />
                 ))}
 
-                {/* Focus Ring Animation */}
-                <Animated.View
-                    style={[
-                        {
-                            position: 'absolute',
-                            width: 85,
-                            height: 85,
-                            borderRadius: 42.5,
-                            borderWidth: 2,
-                            borderColor: colors.primary,
-                        },
-                        focusRingStyle,
-                    ]}
-                />
+                {/* Central Focus Point - RED TARGET - Z:10 - Only show during active gameplay */}
+                {(gameState === 'countdown' || gameState === 'playing' || gameState === 'feedback') && (
+                    <Animated.View style={[focusPulseStyle, { zIndex: 10 }]}>
+                        <View
+                            style={{
+                                width: 50,
+                                height: 50,
+                                borderRadius: 25,
+                                backgroundColor: colors.surface,
+                                borderWidth: 3,
+                                borderColor: '#FF4444', // Red for strong fixation
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                shadowColor: '#FF4444',
+                                shadowOffset: { width: 0, height: 0 },
+                                shadowOpacity: 0.6,
+                                shadowRadius: 15,
+                                elevation: 8,
+                            }}
+                        >
+                            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF4444' }} />
+                        </View>
+                    </Animated.View>
+                )}
 
-                {/* Central Focus Point */}
-                <Animated.View style={focusPulseStyle}>
-                    <View
-                        style={{
-                            width: 60,
-                            height: 60,
-                            borderRadius: 30,
-                            backgroundColor: colors.surface,
-                            borderWidth: 2,
-                            borderColor: colors.primary,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            ...glows.primarySubtle,
-                        }}
-                    >
-                        <Crosshair size={26} color={colors.primary} strokeWidth={2} />
-                    </View>
-                </Animated.View>
+                {/* Focus Ring Animation - Z:11 */}
+                {(gameState === 'playing' || waitingForInput) && (
+                    <Animated.View
+                        style={[
+                            {
+                                position: 'absolute',
+                                width: 75,
+                                height: 75,
+                                borderRadius: 37.5,
+                                borderWidth: 1,
+                                borderColor: '#FF4444',
+                                opacity: 0.5,
+                                zIndex: 11,
+                            },
+                            focusRingStyle,
+                        ]}
+                    />
+                )}
 
-                {/* Peripheral Word - at EXTREME edges */}
+                {/* Peripheral Word - Z:15 */}
                 {currentWord && (
                     <Animated.Text
                         entering={FadeIn.duration(100)}
                         exiting={FadeOut.duration(80)}
-                        style={getWordStyle(wordPosition)}
+                        style={[getWordStyle(wordPosition), { zIndex: 15 }]}
                     >
                         {currentWord}
                     </Animated.Text>
                 )}
 
-                {/* Feedback Indicator */}
+                {/* Feedback Indicator - Z:20 */}
                 {showFeedback && (
                     <View
                         style={{
@@ -493,6 +434,7 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
                             paddingHorizontal: spacing.sm,
                             paddingVertical: spacing.xs,
                             borderRadius: borderRadius.md,
+                            zIndex: 20,
                         }}
                     >
                         {showFeedback === 'correct' ? (
@@ -512,188 +454,229 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
                         )}
                     </View>
                 )}
-            </View>
 
-            {/* Answer Options - Similar-looking words */}
-            {waitingForInput && options.length > 0 && (
-                <View style={{ marginTop: spacing.lg }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm }}>
-                        <AlertCircle size={14} color={colors.secondary} strokeWidth={2} />
+                {/* Countdown Overlay */}
+                {gameState === 'countdown' && (
+                    <View
+                        style={{
+                            position: 'absolute',
+                            zIndex: 30,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: 'rgba(0,0,0,0.85)',
+                            width: '100%',
+                            height: '100%',
+                        }}
+                    >
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiBold,
+                                fontSize: 80,
+                                color: colors.primary,
+                                ...glows.primary,
+                            }}
+                        >
+                            {countdown || 'GO!'}
+                        </Text>
                         <Text
                             style={{
                                 fontFamily: fontFamily.uiMedium,
-                                fontSize: fontSize.sm,
-                                color: colors.secondary,
-                                marginLeft: spacing.xs,
+                                fontSize: fontSize.md,
+                                color: colors.text,
+                                marginTop: spacing.sm,
                             }}
                         >
-                            Which word did you catch?
+                            {t('games.peripheral.eyesLocked')}
                         </Text>
                     </View>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm }}>
-                        {options.map((word, index) => (
-                            <Pressable
-                                key={index}
-                                onPress={() => handleOptionPress(word)}
-                                style={({ pressed }) => ({
-                                    paddingHorizontal: spacing.md,
-                                    paddingVertical: spacing.sm,
-                                    backgroundColor: pressed ? colors.primaryDim : colors.surface,
-                                    borderRadius: borderRadius.md,
-                                    borderWidth: 2,
-                                    borderColor: pressed ? colors.primary : colors.glassBorder,
-                                    minWidth: 80,
-                                    alignItems: 'center',
-                                })}
-                            >
-                                <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.md, color: colors.text }}>{word}</Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                </View>
-            )}
+                )}
 
-            {/* Completion Screen */}
-            {gameState === 'complete' && (
-                <View
-                    style={{
-                        marginTop: spacing.lg,
-                        alignItems: 'center',
-                        backgroundColor: colors.surface,
-                        borderRadius: borderRadius.lg,
-                        padding: spacing.lg,
-                        borderWidth: 1,
-                        borderColor: getPerformanceMessage().color,
-                        width: areaWidth,
-                    }}
-                >
-                    <Text style={{ fontFamily: fontFamily.uiBold, fontSize: 32, color: getPerformanceMessage().color }}>
-                        {getPerformanceMessage().emoji} {score}/{totalRounds}
-                    </Text>
-                    <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.md, color: colors.text, marginTop: spacing.xs }}>
-                        {getPerformanceMessage().text}
-                    </Text>
-                    {bestStreak > 1 && (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm }}>
-                            <TrendingUp size={16} color={colors.secondary} strokeWidth={2} />
-                            <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.sm, color: colors.secondary, marginLeft: spacing.xs }}>
-                                Best streak: {bestStreak} in a row
+
+                {/* 2. Menu / Controls Overlay (Visible when ready or complete) */}
+                {(gameState === 'ready' || gameState === 'complete') && (
+                    <View
+                        style={{
+                            position: 'absolute',
+                            width: '100%',
+                            height: '100%',
+                            backgroundColor: colors.surface + 'F5', // More opaque to hide background elements
+                            zIndex: 40,
+                            justifyContent: 'space-between', // Use space-between for better vertical distribution
+                            alignItems: 'center',
+                            paddingVertical: spacing.xl,
+                            paddingHorizontal: spacing.lg,
+                        }}
+                    >
+                        {gameState === 'complete' ? (
+                            // Completed State
+                            <View style={{ alignItems: 'center', width: '100%', flex: 1, justifyContent: 'center' }}>
+                                <Text style={{ fontFamily: fontFamily.uiBold, fontSize: 48, color: getPerformanceMessage().color, marginBottom: spacing.xs }}>
+                                    {getPerformanceMessage().emoji}
+                                </Text>
+                                <Text style={{ fontFamily: fontFamily.uiBold, fontSize: 32, color: colors.text }}>
+                                    {score}/{totalRounds}
+                                </Text>
+                                <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.md, color: colors.textMuted, marginBottom: spacing.lg, textAlign: 'center' }}>
+                                    {getPerformanceMessage().text}
+                                </Text>
+
+                                <Pressable
+                                    onPress={handleStart}
+                                    style={({ pressed }) => ({
+                                        width: '90%',
+                                        maxWidth: 280,
+                                        paddingVertical: spacing.lg,
+                                        backgroundColor: pressed ? '#1a8f3a' : '#22c55e', // Vibrant green
+                                        borderRadius: borderRadius.lg,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        marginTop: spacing.lg,
+                                        shadowColor: '#22c55e',
+                                        shadowOffset: { width: 0, height: 6 },
+                                        shadowOpacity: 0.5,
+                                        shadowRadius: 14,
+                                        elevation: 10,
+                                        transform: [{ scale: pressed ? 0.97 : 1 }],
+                                    })}
+                                >
+                                    <RotateCcw size={24} color="#fff" strokeWidth={2.5} />
+                                    <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.lg, color: '#fff', marginLeft: spacing.xs }}>
+                                        {t('games.common.playAgain')}
+                                    </Text>
+                                </Pressable>
+                            </View>
+                        ) : (
+                            // Ready State - Redesigned layout
+                            <>
+                                {/* Top section - Title and Difficulty Selector */}
+                                <View style={{ alignItems: 'center', width: '100%' }}>
+                                    <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.sm, color: colors.textMuted, marginBottom: spacing.md }}>
+                                        {t('games.peripheral.selectDifficulty')}
+                                    </Text>
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            flexWrap: 'wrap',
+                                            justifyContent: 'center',
+                                            gap: spacing.sm,
+                                            width: '100%',
+                                        }}
+                                    >
+                                        {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map((level) => (
+                                            <Pressable
+                                                key={level}
+                                                onPress={() => setDifficulty(level)}
+                                                style={{
+                                                    paddingHorizontal: spacing.md,
+                                                    paddingVertical: spacing.sm,
+                                                    borderRadius: borderRadius.full,
+                                                    backgroundColor: difficulty === level ? colors.primary : colors.surfaceElevated,
+                                                    borderWidth: 1,
+                                                    borderColor: difficulty === level ? colors.primary : colors.glassBorder,
+                                                }}
+                                            >
+                                                <Text
+                                                    style={{
+                                                        fontFamily: fontFamily.uiMedium,
+                                                        fontSize: fontSize.sm,
+                                                        color: difficulty === level ? colors.background : colors.textMuted,
+                                                    }}
+                                                >
+                                                    {t(`games.peripheral.difficulty.${level}`)}
+                                                </Text>
+                                            </Pressable>
+                                        ))}
+                                    </View>
+                                </View>
+
+                                {/* Middle section - Game Info (centered) */}
+                                <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                                    <View style={{
+                                        backgroundColor: colors.surfaceElevated,
+                                        paddingHorizontal: spacing.xl,
+                                        paddingVertical: spacing.lg,
+                                        borderRadius: borderRadius.bento,
+                                        borderWidth: 1,
+                                        borderColor: colors.glassBorder,
+                                        alignItems: 'center',
+                                    }}>
+                                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: 36, color: colors.primary }}>
+                                            {DIFFICULTY_CONFIG[difficulty].description}
+                                        </Text>
+                                        <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.md, color: colors.textMuted, marginTop: spacing.xs }}>
+                                            {DIFFICULTY_CONFIG[difficulty].rounds} {t('games.common.round').toLowerCase()}s
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                {/* Bottom section - Start Button */}
+                                <View style={{ alignItems: 'center', width: '100%' }}>
+                                    <Pressable
+                                        onPress={handleStart}
+                                        style={({ pressed }) => ({
+                                            width: '100%',
+                                            maxWidth: 280,
+                                            paddingVertical: spacing.lg,
+                                            backgroundColor: pressed ? '#1a8f3a' : '#22c55e', // Vibrant green
+                                            borderRadius: borderRadius.lg,
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            shadowColor: '#22c55e',
+                                            shadowOffset: { width: 0, height: 6 },
+                                            shadowOpacity: 0.5,
+                                            shadowRadius: 14,
+                                            elevation: 10,
+                                            transform: [{ scale: pressed ? 0.97 : 1 }],
+                                        })}
+                                    >
+                                        <Play size={28} color="#fff" fill="#fff" />
+                                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.xl, color: '#fff', marginLeft: spacing.xs }}>
+                                            {t('games.common.start')}
+                                        </Text>
+                                    </Pressable>
+                                </View>
+                            </>
+                        )}
+                    </View>
+                )}
+            </View>
+
+            {/* Answer Options Overlay - Cyber HUD style (Kept same logic, just checked it overlays correctly) */}
+            <HUDOverlay
+                visible={waitingForInput && options.length > 0}
+                options={options}
+                onSelect={(word) => handleOptionPress(word)}
+            />
+
+            {/* Stats Footer - Z:50 to ensure it's above other elements */}
+            {(gameState === 'playing' || gameState === 'feedback') && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.lg, gap: spacing.lg, zIndex: 50, position: 'relative' }}>
+                    <View style={{ alignItems: 'center' }}>
+                        <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted }}>{t('games.common.round')}</Text>
+                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.lg, color: colors.text }}>
+                            {round + 1}/{totalRounds}
+                        </Text>
+                    </View>
+                    <View style={{ alignItems: 'center' }}>
+                        <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted }}>{t('games.common.score')}</Text>
+                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.lg, color: colors.success }}>{score}</Text>
+                    </View>
+                    {streak > 1 && (
+                        <View
+                            style={{
+                                alignItems: 'center',
+                                backgroundColor: colors.primaryGlow,
+                                paddingHorizontal: spacing.sm,
+                                paddingVertical: spacing.xs,
+                                borderRadius: borderRadius.md,
+                            }}
+                        >
+                            <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.sm, color: colors.primary }}>
+                                🔥 {streak}
                             </Text>
                         </View>
-                    )}
-                </View>
-            )}
-
-            {/* Difficulty Selector */}
-            {(gameState === 'ready' || gameState === 'complete') && (
-                <View
-                    style={{
-                        flexDirection: 'row',
-                        marginTop: spacing.lg,
-                        backgroundColor: colors.surface,
-                        borderRadius: borderRadius.lg,
-                        padding: spacing.xs,
-                        borderWidth: 1,
-                        borderColor: colors.glassBorder,
-                    }}
-                >
-                    {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map((level) => (
-                        <Pressable
-                            key={level}
-                            onPress={() => setDifficulty(level)}
-                            style={{
-                                paddingHorizontal: spacing.sm,
-                                paddingVertical: spacing.sm,
-                                borderRadius: borderRadius.md,
-                                backgroundColor: difficulty === level ? colors.primary : 'transparent',
-                                alignItems: 'center',
-                            }}
-                        >
-                            <Text
-                                style={{
-                                    fontFamily: fontFamily.uiMedium,
-                                    fontSize: fontSize.xs,
-                                    color: difficulty === level ? colors.background : colors.textMuted,
-                                }}
-                            >
-                                {DIFFICULTY_CONFIG[level].label}
-                            </Text>
-                        </Pressable>
-                    ))}
-                </View>
-            )}
-
-            {/* Ready State Instructions */}
-            {gameState === 'ready' && (
-                <View
-                    style={{
-                        marginTop: spacing.md,
-                        backgroundColor: colors.surface,
-                        borderRadius: borderRadius.md,
-                        padding: spacing.md,
-                        borderWidth: 1,
-                        borderColor: colors.glassBorder,
-                        width: areaWidth,
-                    }}
-                >
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiMedium,
-                            fontSize: fontSize.sm,
-                            color: colors.secondary,
-                            textAlign: 'center',
-                            marginBottom: spacing.xs,
-                        }}
-                    >
-                        ⚡ {DIFFICULTY_CONFIG[difficulty].description} flash • {DIFFICULTY_CONFIG[difficulty].rounds} rounds
-                    </Text>
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiRegular,
-                            fontSize: fontSize.xs,
-                            color: colors.textMuted,
-                            textAlign: 'center',
-                        }}
-                    >
-                        Words flash at EXTREME edges. Keep eyes locked on center. Choose from similar-looking options.
-                    </Text>
-                </View>
-            )}
-
-            {/* Controls */}
-            {(gameState === 'ready' || gameState === 'complete') && (
-                <View style={{ flexDirection: 'row', marginTop: spacing.lg, gap: spacing.md }}>
-                    <Pressable
-                        onPress={handleStart}
-                        style={({ pressed }) => ({
-                            paddingHorizontal: spacing.xl,
-                            paddingVertical: spacing.md,
-                            backgroundColor: pressed ? colors.primaryDim : colors.primary,
-                            borderRadius: borderRadius.lg,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                        })}
-                    >
-                        <Play size={20} color={colors.background} strokeWidth={2} />
-                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.md, color: colors.background, marginLeft: spacing.sm }}>
-                            {gameState === 'complete' ? 'Play Again' : 'Start'}
-                        </Text>
-                    </Pressable>
-
-                    {gameState === 'complete' && (
-                        <Pressable
-                            onPress={handleReset}
-                            style={({ pressed }) => ({
-                                paddingHorizontal: spacing.md,
-                                paddingVertical: spacing.md,
-                                backgroundColor: pressed ? colors.surfaceElevated : colors.surface,
-                                borderRadius: borderRadius.lg,
-                                borderWidth: 1,
-                                borderColor: colors.glassBorder,
-                            })}
-                        >
-                            <RotateCcw size={20} color={colors.textMuted} strokeWidth={2} />
-                        </Pressable>
                     )}
                 </View>
             )}

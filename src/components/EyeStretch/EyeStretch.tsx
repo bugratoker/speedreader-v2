@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Pressable, Dimensions } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -37,13 +38,14 @@ const SPEED_CONFIG: Record<SpeedLevel, { duration: number; label: string; descri
 const TOTAL_CYCLES = 5;
 
 export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
+    const { t } = useTranslation();
     const { colors, spacing, fontFamily, fontSize, borderRadius, glows } = useTheme();
 
     const [isRunning, setIsRunning] = useState(false);
     const [speed, setSpeed] = useState<SpeedLevel>('medium');
     const [cycleCount, setCycleCount] = useState(0);
     const [isComplete, setIsComplete] = useState(false);
-    const [currentPosition, setCurrentPosition] = useState('Center');
+    const [currentPosition, setCurrentPosition] = useState(t('games.common.directions.center'));
 
     const progress = useSharedValue(0);
     const dotScale = useSharedValue(1);
@@ -55,33 +57,22 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
     const areaHeight = 280;
     const dotSize = 32;
 
-    // Infinity (Lazy-8) path calculation
-    // Using parametric equations for lemniscate of Bernoulli
-    const getInfinityPosition = (t: number): { x: number; y: number; label: string } => {
+    // Worklet for infinity path calculation
+    const getInfinityPosition = (t: number, width: number, height: number): { x: number; y: number } => {
+        'worklet';
         // t goes from 0 to 1 for one complete figure-8
         const angle = t * 2 * Math.PI;
 
         // Scale factors for the infinity shape
-        const scaleX = (areaWidth / 2) - 40;
-        const scaleY = (areaHeight / 2) - 40;
+        const scaleX = (width / 2) - 40;
+        const scaleY = (height / 2) - 40;
 
         // Lemniscate parametric equations
         const denominator = 1 + Math.sin(angle) * Math.sin(angle);
         const x = (scaleX * Math.cos(angle)) / denominator;
         const y = (scaleY * Math.sin(angle) * Math.cos(angle)) / denominator;
 
-        // Position labels for feedback
-        let label = 'Center';
-        if (t < 0.125) label = 'Right →';
-        else if (t < 0.25) label = 'Top-Right ↗';
-        else if (t < 0.375) label = 'Center';
-        else if (t < 0.5) label = 'Bottom-Right ↘';
-        else if (t < 0.625) label = 'Left ←';
-        else if (t < 0.75) label = 'Top-Left ↖';
-        else if (t < 0.875) label = 'Center';
-        else label = 'Bottom-Left ↙';
-
-        return { x, y, label };
+        return { x, y };
     };
 
     const handleCycleComplete = useCallback(() => {
@@ -151,8 +142,18 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
         const interval = setInterval(() => {
             // Read progress (approximation for UI)
             const currentProgress = Math.abs((Date.now() % SPEED_CONFIG[speed].duration) / SPEED_CONFIG[speed].duration);
-            const pos = getInfinityPosition(currentProgress);
-            setCurrentPosition(pos.label);
+
+            let label = t('games.common.directions.center');
+            if (currentProgress < 0.125) label = `${t('games.common.directions.right')} →`;
+            else if (currentProgress < 0.25) label = `${t('games.common.directions.topRight')} ↗`;
+            else if (currentProgress < 0.375) label = t('games.common.directions.center');
+            else if (currentProgress < 0.5) label = `${t('games.common.directions.bottomRight')} ↘`;
+            else if (currentProgress < 0.625) label = `${t('games.common.directions.left')} ←`;
+            else if (currentProgress < 0.75) label = `${t('games.common.directions.topLeft')} ↖`;
+            else if (currentProgress < 0.875) label = t('games.common.directions.center');
+            else label = `${t('games.common.directions.bottomLeft')} ↙`;
+
+            setCurrentPosition(label);
         }, 100);
 
         return () => clearInterval(interval);
@@ -174,7 +175,7 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
         setCycleCount(0);
         cycleCountRef.current = 0;
         setIsComplete(false);
-        setCurrentPosition('Center');
+        setCurrentPosition(t('games.common.directions.center'));
         progress.value = 0;
         dotScale.value = 1;
         glowIntensity.value = 0.5;
@@ -182,7 +183,7 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
     };
 
     const dotAnimatedStyle = useAnimatedStyle(() => {
-        const pos = getInfinityPosition(progress.value);
+        const pos = getInfinityPosition(progress.value, areaWidth, areaHeight);
         return {
             transform: [
                 { translateX: pos.x },
@@ -193,7 +194,7 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
     });
 
     const glowAnimatedStyle = useAnimatedStyle(() => {
-        const pos = getInfinityPosition(progress.value);
+        const pos = getInfinityPosition(progress.value, areaWidth, areaHeight);
         return {
             opacity: glowIntensity.value,
             transform: [
@@ -209,7 +210,7 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
     const createTrailStyle = (offset: number) => {
         return useAnimatedStyle(() => {
             const trailProgress = (progress.value - offset + 1) % 1;
-            const pos = getInfinityPosition(trailProgress);
+            const pos = getInfinityPosition(trailProgress, areaWidth, areaHeight);
             return {
                 opacity: trailOpacity.value * (1 - offset * 4),
                 transform: [
@@ -240,7 +241,7 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
                         flex: 1,
                     }}
                 >
-                    Follow the dot smoothly. Keep head still, move only eyes.
+                    {t('games.eyestretch.instructions')}
                 </Text>
             </View>
 
@@ -251,7 +252,7 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
                         {cycleCount}
                     </Text>
                     <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted }}>
-                        / {TOTAL_CYCLES} cycles
+                        / {TOTAL_CYCLES} {t('games.common.cycles')}
                     </Text>
                 </View>
                 <View
@@ -393,13 +394,13 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
                     }}
                 >
                     <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.xl, color: colors.secondary }}>
-                        ∞ Eyes Stretched!
+                        ∞ {t('games.eyestretch.titleComplete')}
                     </Text>
                     <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.md, color: colors.text, marginTop: spacing.xs }}>
-                        {TOTAL_CYCLES} infinity cycles completed
+                        {TOTAL_CYCLES} infinity {t('games.common.cycles')} {t('games.schulte.complete')}
                     </Text>
                     <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.sm, color: colors.textMuted, marginTop: spacing.xs }}>
-                        Extraocular muscles activated ✓
+                        {t('games.eyestretch.completeMsg')}
                     </Text>
                 </View>
             )}
@@ -436,7 +437,7 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
                                 color: speed === level ? colors.white : colors.textMuted,
                             }}
                         >
-                            {SPEED_CONFIG[level].label}
+                            {t(`games.eyestretch.speed.${level}`)}
                         </Text>
                     </Pressable>
                 ))}
@@ -461,7 +462,7 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
                         <Play size={20} color={colors.white} strokeWidth={2} />
                     )}
                     <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.md, color: colors.white, marginLeft: spacing.sm }}>
-                        {isRunning ? 'Pause' : isComplete ? 'Restart' : 'Start'}
+                        {isRunning ? t('games.common.pause') : isComplete ? t('games.common.restart') : t('games.common.start')}
                     </Text>
                 </Pressable>
 

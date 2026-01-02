@@ -2,7 +2,9 @@ import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useTheme } from '../../theme';
+import { ScalePressable } from '../../components';
 
 export const HomeScreen: React.FC = () => {
     const { t } = useTranslation();
@@ -22,7 +24,10 @@ export const HomeScreen: React.FC = () => {
                 contentContainerStyle={{ padding: spacing.md, paddingBottom: 120 }}
             >
                 {/* Header */}
-                <View style={{ paddingVertical: spacing.lg }}>
+                <Animated.View
+                    entering={FadeInDown.delay(100).springify()}
+                    style={{ paddingVertical: spacing.lg }}
+                >
                     <Text
                         style={{
                             fontFamily: fontFamily.uiBold,
@@ -42,124 +47,130 @@ export const HomeScreen: React.FC = () => {
                     >
                         {t('home.subtitle')}
                     </Text>
-                </View>
+                </Animated.View>
 
                 {/* Bento Box Card Example */}
-                <View
-                    style={{
-                        backgroundColor: colors.surface,
-                        borderRadius: borderRadius.bento,
-                        borderWidth: 1,
-                        borderColor: colors.glassBorder,
-                        padding: spacing.lg,
-                        marginTop: spacing.md,
-                        ...glows.primarySubtle,
-                    }}
-                >
-                    <Text
+                <Animated.View entering={FadeInDown.delay(200).springify()}>
+                    <ScalePressable
                         style={{
-                            fontFamily: fontFamily.reading,
-                            fontSize: fontSize.readingLg,
-                            color: colors.text,
-                            lineHeight: fontSize.readingLg * 1.8,
+                            backgroundColor: colors.surface,
+                            borderRadius: borderRadius.bento,
+                            borderWidth: 1,
+                            borderColor: colors.glassBorder,
+                            padding: spacing.lg,
+                            marginTop: spacing.md,
+                            ...glows.primarySubtle,
                         }}
                     >
-                        {t('home.welcomeCard')}
-                    </Text>
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiRegular,
-                            fontSize: fontSize.sm,
-                            color: colors.textMuted,
-                            marginTop: spacing.sm,
-                        }}
-                    >
-                        {t('home.features')}
-                    </Text>
-                </View>
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.reading,
+                                fontSize: fontSize.readingLg,
+                                color: colors.text,
+                                lineHeight: fontSize.readingLg * 1.8,
+                            }}
+                        >
+                            {t('home.welcomeCard')}
+                        </Text>
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiRegular,
+                                fontSize: fontSize.sm,
+                                color: colors.textMuted,
+                                marginTop: spacing.sm,
+                            }}
+                        >
+                            {t('home.features')}
+                        </Text>
+                    </ScalePressable>
+                </Animated.View>
 
                 {/* Secondary Card */}
-                <View
-                    style={{
-                        backgroundColor: colors.surface,
-                        borderRadius: borderRadius.bento,
-                        borderWidth: 1,
-                        borderColor: colors.glassBorder,
-                        padding: spacing.lg,
-                        marginTop: spacing.md,
-                        ...glows.secondarySubtle,
-                    }}
-                >
-                    <Text
+                <Animated.View entering={FadeInDown.delay(300).springify()}>
+                    <ScalePressable
                         style={{
-                            fontFamily: fontFamily.uiMedium,
-                            fontSize: fontSize.lg,
-                            color: colors.secondary,
+                            backgroundColor: colors.surface,
+                            borderRadius: borderRadius.bento,
+                            borderWidth: 1,
+                            borderColor: colors.glassBorder,
+                            padding: spacing.lg,
+                            marginTop: spacing.md,
+                            ...glows.secondarySubtle,
                         }}
                     >
-                        {t('home.aiFeatures')}
-                    </Text>
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiRegular,
-                            fontSize: fontSize.sm,
-                            color: colors.textMuted,
-                            marginTop: spacing.xs,
-                        }}
-                    >
-                        {t('home.aiDescription')}
-                    </Text>
-                </View>
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiMedium,
+                                fontSize: fontSize.lg,
+                                color: colors.secondary,
+                            }}
+                        >
+                            {t('home.aiFeatures')}
+                        </Text>
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiRegular,
+                                fontSize: fontSize.sm,
+                                color: colors.textMuted,
+                                marginTop: spacing.xs,
+                            }}
+                        >
+                            {t('home.aiDescription')}
+                        </Text>
+                    </ScalePressable>
+                </Animated.View>
 
                 {/* Progress Bar Example */}
-                <View
-                    style={{
-                        backgroundColor: colors.surface,
-                        borderRadius: borderRadius.bento,
-                        borderWidth: 1,
-                        borderColor: colors.glassBorder,
-                        padding: spacing.lg,
-                        marginTop: spacing.md,
-                    }}
-                >
-                    <Text
+                <Animated.View entering={FadeInDown.delay(400).springify()}>
+                    <ScalePressable
                         style={{
-                            fontFamily: fontFamily.uiMedium,
-                            fontSize: fontSize.sm,
-                            color: colors.textMuted,
-                            marginBottom: spacing.sm,
+                            backgroundColor: colors.surface,
+                            borderRadius: borderRadius.bento,
+                            borderWidth: 1,
+                            borderColor: colors.glassBorder,
+                            padding: spacing.lg,
+                            marginTop: spacing.md,
                         }}
                     >
-                        {t('home.readingProgress')}
-                    </Text>
-                    <View
-                        style={{
-                            height: 8,
-                            backgroundColor: colors.surfaceElevated,
-                            borderRadius: borderRadius.full,
-                            overflow: 'hidden',
-                        }}
-                    >
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiMedium,
+                                fontSize: fontSize.sm,
+                                color: colors.textMuted,
+                                marginBottom: spacing.sm,
+                            }}
+                        >
+                            {t('home.readingProgress')}
+                        </Text>
                         <View
                             style={{
-                                width: '65%',
-                                height: '100%',
-                                backgroundColor: colors.primary,
+                                height: 8,
+                                backgroundColor: colors.surfaceElevated,
                                 borderRadius: borderRadius.full,
+                                overflow: 'hidden',
                             }}
-                        />
-                    </View>
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiRegular,
-                            fontSize: fontSize.xs,
-                            color: colors.primary,
-                            marginTop: spacing.xs,
-                        }}
-                    >
-                        650 / 1000 {t('common.words')} • 350 {t('common.wpm')}
-                    </Text>
-                </View>
+                        >
+                            <View
+                                style={{
+                                    width: '65%',
+                                    height: '100%',
+                                    backgroundColor: colors.primary,
+                                    borderRadius: borderRadius.full,
+                                }}
+                            />
+                        </View>
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiRegular,
+                                fontSize: fontSize.xs,
+                                color: colors.primary,
+                                marginTop: spacing.xs,
+                            }}
+                        >
+                            650 / 1000 {t('common.words')} • 350 {t('common.wpm')}
+                        </Text>
+                    </ScalePressable>
+                </Animated.View>
             </ScrollView>
         </View>
     );

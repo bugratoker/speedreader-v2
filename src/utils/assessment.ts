@@ -60,9 +60,9 @@ export const getComparison = (wpm: number): { type: 'faster' | 'slower' | 'avera
  * Get skill level based on WPM
  */
 export const getSkillLevel = (wpm: number): string => {
-    if (wpm < WPM_BENCHMARKS.slow) return 'Beginner';
-    if (wpm < WPM_BENCHMARKS.average) return 'Below Average';
-    if (wpm < WPM_BENCHMARKS.fast) return 'Average';
-    if (wpm < WPM_BENCHMARKS.speedReader) return 'Fast Reader';
-    return 'Speed Reader';
+    if (wpm < WPM_BENCHMARKS.slow) return 'assessment.skill.beginner';
+    if (wpm < WPM_BENCHMARKS.average) return 'assessment.skill.belowAverage';
+    if (wpm < WPM_BENCHMARKS.fast) return 'assessment.skill.average';
+    if (wpm < WPM_BENCHMARKS.speedReader) return 'assessment.skill.fastReader';
+    return 'assessment.skill.speedReader';
 };

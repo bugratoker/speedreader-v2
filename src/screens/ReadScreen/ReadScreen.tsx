@@ -59,7 +59,19 @@ export const ReadScreen: React.FC = () => {
         switch (engine.mode) {
             case 'rsvp':
                 return (
-                    <View style={[styles.displayContainer, { backgroundColor: colors.surface, borderColor: colors.glassBorder }]}>
+                    <View style={[
+                        styles.displayContainer,
+                        {
+                            backgroundColor: colors.surface,
+                            borderColor: colors.glassBorder,
+                            // Add depth
+                            shadowColor: colors.primary,
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.1,
+                            shadowRadius: 12,
+                            elevation: 4
+                        }
+                    ]}>
                         <RSVPWordDisplay
                             word={engine.currentWord || ''}
                             fadeAnim={fadeAnim}
@@ -82,7 +94,13 @@ export const ReadScreen: React.FC = () => {
 
             case 'chunk':
                 return (
-                    <View style={[styles.displayContainer, { backgroundColor: colors.surface, borderColor: colors.glassBorder }]}>
+                    <View style={[
+                        styles.displayContainer,
+                        {
+                            backgroundColor: colors.surface,
+                            borderColor: colors.glassBorder
+                        }
+                    ]}>
                         <ChunkDisplay
                             words={engine.currentChunk || []}
                             fadeAnim={fadeAnim}
@@ -134,9 +152,17 @@ export const ReadScreen: React.FC = () => {
                     />
                 </View>
 
-                {/* Progress Bar */}
-                <View style={[styles.progressBar, { backgroundColor: colors.surface }]}>
-                    <View style={[styles.progressFill, { width: `${engine.progress}%`, backgroundColor: colors.primary }]} />
+                {/* Progress Bar with Glow */}
+                <View style={[
+                    styles.progressBar,
+                    { backgroundColor: colors.surface },
+                    glows.primarySubtle // Add subtle glow to container
+                ]}>
+                    <View style={[
+                        styles.progressFill,
+                        { width: `${engine.progress}%`, backgroundColor: colors.primary },
+                        glows.primary // Glow the fill
+                    ]} />
                 </View>
 
                 {/* Mode Display */}

@@ -36,23 +36,32 @@
     },
     "assessment": {
         "title": "Speed Assessment",
-        "subtitle": "Let's measure your reading speed",
-        "instructions": "Read the passage below at your normal pace. Tap when you finish.",
+        "subtitle": "Determine your baseline WPM",
+        "instructions": "Words will appear one at a time. Adjust the speed until it feels comfortable. This will be your baseline reading speed.",
+        "hint": "Adjust speed while reading until comfortable",
         "tapToStart": "Tap to Start",
-        "reading": "Reading...",
-        "tapWhenDone": "Tap when finished",
-        "timeRemaining": "Time remaining",
-        "calculating": "Calculating your speed...",
-        "yourSpeed": "Your Reading Speed",
-        "wordsPerMinute": "words per minute",
-        "comparison": {
-            "faster": "You read {{percent}}% faster than average!",
-            "slower": "You read {{percent}}% slower than average",
-            "average": "You read at an average speed"
-        },
-        "averageWpm": "Average reader: 200-250 WPM",
+        "wordsPerMinute": "WORDS PER MINUTE",
+        "averageWpm": "Average adult: 225 WPM",
+        "retakeButton": "Retake",
         "continueButton": "Continue",
-        "retakeButton": "Retake Test"
+        "comparison": {
+            "average": "You read at an average speed",
+            "faster": "{{percent}}% faster than average",
+            "slower": "{{percent}}% slower than average"
+        },
+        "skill": {
+            "beginner": "Beginner",
+            "belowAverage": "Below Average",
+            "average": "Average",
+            "fastReader": "Fast Reader",
+            "speedReader": "Speed Reader"
+        }
+    },
+    "aiCard": {
+        "label": "AI Generated",
+        "title": "Every 300 Words",
+        "subtitle": "Cinematic visuals bring your reading to life",
+        "progress": "Word {{current}} / {{total}}"
     },
     "home": {
         "title": "Speed Reader",
@@ -80,14 +89,278 @@
     },
     "training": {
         "title": "Training Lab",
-        "subtitle": "Eye exercises and focus drills"
+        "subtitle": "Eye exercises and focus drills",
+        "headerSubtitle": "Neuro-Ocular Conditioning for Speed Reading",
+        "back": "Back",
+        "recommendedFlow": "Recommended Flow",
+        "recommendedFlowText": "Eye Stretch → Schulte → Saccadic → Peripheral",
+        "musclePreConditioning": "Muscle Pre-conditioning",
+        "perceptualProcessing": "Perceptual Processing",
+        "trainingProtocol": "Training Protocol",
+        "trainingProtocolText": "Practice for 5-10 minutes daily",
+        "trainingProtocolTextSuffix": "before reading sessions. Research shows significant improvement in peripheral vision and eye movement speed after 2-3 weeks of consistent training.",
+        "exercises": {
+            "schulte": {
+                "title": "Schulte Table",
+                "subtitle": "Attentional Stability Training",
+                "description": "Find numbers while keeping gaze fixed on center point",
+                "academicBasis": "Improves visual search and attentional stability"
+            },
+            "saccadic": {
+                "title": "Saccadic Jumps",
+                "subtitle": "Anti-Regression & Return Sweep Training",
+                "description": "Rapid eye movement training for precise line-to-line jumps",
+                "academicBasis": "Trains Return Sweeps, minimizes regressions"
+            },
+            "eyestretch": {
+                "title": "Infinity Stretch",
+                "subtitle": "Ocular Flexibility Training",
+                "description": "Follow the Lazy-8 pattern to exercise all six extraocular muscles",
+                "academicBasis": "Improves smooth pursuit and ciliary muscle flexibility"
+            },
+            "peripheral": {
+                "title": "Peripheral Catch",
+                "subtitle": "Parafoveal Processing Training",
+                "description": "Identify words using only peripheral vision",
+                "academicBasis": "Expands parafoveal span for faster reading"
+            }
+        },
+        "difficulty": {
+            "warmUp": "Warm-up",
+            "training": "Training",
+            "challenge": "Challenge"
+        }
     },
     "profile": {
         "title": "Profile",
-        "subtitle": "Settings & Analytics"
+        "subtitle": "Settings & Analytics",
+        "settings": "SETTINGS",
+        "appearance": "Appearance",
+        "language": "Language"
     },
     "rsvp": {
         "aiGenerated": "AI Generated",
         "wordProgress": "Word {{current}} / {{total}}"
+    },
+    "games": {
+        "common": {
+            "start": "Start",
+            "pause": "Pause",
+            "restart": "Restart",
+            "playAgain": "Play Again",
+            "close": "Close",
+            "back": "Back",
+            "time": "Time",
+            "best": "Best",
+            "score": "Score",
+            "round": "Round",
+            "cycles": "cycles",
+            "jumps": "jumps",
+            "grid": "Grid",
+            "directions": {
+                "center": "Center",
+                "right": "Right",
+                "left": "Left",
+                "top": "Top",
+                "bottom": "Bottom",
+                "topRight": "Top-Right",
+                "bottomRight": "Bottom-Right",
+                "topLeft": "Top-Left",
+                "bottomLeft": "Bottom-Left"
+            }
+        },
+        "schulte": {
+            "target": "TARGET",
+            "find": "Find",
+            "complete": "Complete",
+            "relaxed": "Relaxed",
+            "strictFixation": "Strict Fixation",
+            "newRecord": "NEW RECORD!",
+            "ranks": {
+                "sPlus": "Godlike Speed! ⚡",
+                "s": "Elite Vision! 👁️",
+                "a": "Excellent Focus! 🔥",
+                "b": "Great Job! 🚀",
+                "c": "Good Start! 👍",
+                "d": "Keep Training! 💪"
+            }
+        },
+        "saccadic": {
+            "instructions": "Jump eyes between dots instantly. Head still, zero overshoot!",
+            "interval": "interval",
+            "getReady": "Get ready to jump!",
+            "horizontal": "Horizontal",
+            "vertical": "Vertical",
+            "trainingTip": "This trains \"Return Sweeps\" for faster line-to-line reading and reduces involuntary regressions.",
+            "greatJob": "Great Saccades!",
+            "completeMsg": "Anti-regression training complete ✓",
+            "speed": {
+                "slow": "Slow",
+                "medium": "Medium",
+                "fast": "Fast"
+            }
+        },
+        "eyestretch": {
+            "instructions": "Follow the dot smoothly. Keep head still, move only eyes.",
+            "titleComplete": "Eyes Stretched!",
+            "completeMsg": "Extraocular muscles activated ✓",
+            "speed": {
+                "slow": "Relaxed",
+                "medium": "Training",
+                "fast": "Challenge"
+            },
+            "speedDesc": {
+                "slow": "Gentle stretch",
+                "medium": "Standard pace",
+                "fast": "Quick tracking"
+            }
+        },
+        "peripheral": {
+            "instructions": "Lock eyes on ⊕ center. Catch words in extreme peripheral vision.",
+            "eyesLocked": "Eyes LOCKED on center!",
+            "question": "Which word did you catch?",
+            "selectDifficulty": "Select Difficulty",
+            "bestStreak": "Best streak: {{count}} in a row",
+            "readyDesc": "Words flash at EXTREME edges. Keep eyes locked on center. Choose from similar-looking options.",
+            "difficulty": {
+                "beginner": "Beginner",
+                "intermediate": "Intermediate",
+                "advanced": "Advanced",
+                "expert": "Expert"
+            },
+            "difficultyDesc": "flash • {{rounds}} rounds",
+            "performance": {
+                "elite": "Elite peripheral vision!",
+                "excellent": "Excellent parafoveal span!",
+                "good": "Good peripheral awareness!",
+                "keepGoing": "Keep training, improving!",
+                "challenging": "This is challenging! Practice more."
+            },
+            "wordGroups": [
+                {
+                    "target": "FOCUS",
+                    "distractors": [
+                        "LOCUS",
+                        "FOGUS",
+                        "FOUND"
+                    ]
+                },
+                {
+                    "target": "SPEED",
+                    "distractors": [
+                        "SPIED",
+                        "STEED",
+                        "SPELL"
+                    ]
+                },
+                {
+                    "target": "BRAIN",
+                    "distractors": [
+                        "DRAIN",
+                        "BRAID",
+                        "TRAIN"
+                    ]
+                },
+                {
+                    "target": "LEARN",
+                    "distractors": [
+                        "YEARN",
+                        "LEANT",
+                        "LEAN"
+                    ]
+                },
+                {
+                    "target": "THINK",
+                    "distractors": [
+                        "THICK",
+                        "THUNK",
+                        "BLINK"
+                    ]
+                },
+                {
+                    "target": "POWER",
+                    "distractors": [
+                        "TOWER",
+                        "PORER",
+                        "POKER"
+                    ]
+                },
+                {
+                    "target": "SHARP",
+                    "distractors": [
+                        "SHAPE",
+                        "SHARK",
+                        "SHARD"
+                    ]
+                },
+                {
+                    "target": "QUICK",
+                    "distractors": [
+                        "QUIET",
+                        "QUACK",
+                        "THICK"
+                    ]
+                },
+                {
+                    "target": "ALERT",
+                    "distractors": [
+                        "ALTER",
+                        "AVERT",
+                        "ALOFT"
+                    ]
+                },
+                {
+                    "target": "SKILL",
+                    "distractors": [
+                        "SKULL",
+                        "SPILL",
+                        "STILL"
+                    ]
+                },
+                {
+                    "target": "VISION",
+                    "distractors": [
+                        "FUSION",
+                        "VISON",
+                        "VISUAL"
+                    ]
+                },
+                {
+                    "target": "EXPAND",
+                    "distractors": [
+                        "EXPEND",
+                        "EXTEND",
+                        "EXPLND"
+                    ]
+                },
+                {
+                    "target": "DECODE",
+                    "distractors": [
+                        "RECODE",
+                        "ENCODE",
+                        "DECOBE"
+                    ]
+                },
+                {
+                    "target": "ABSORB",
+                    "distractors": [
+                        "ABSORV",
+                        "ADSORB",
+                        "ABSURD"
+                    ]
+                }
+            ]
+        },
+        "academic": {
+            "schulte": {
+                "title": "The Useful Field of View (UFOV)",
+                "description": "The Useful Field of View (UFOV) research proves that peripheral vision training expands the brain's ability to process visual information faster and improves attention quality.\n\n📖 Ball, K. & Owsley, C. (1993). 'The useful field of view: A new technique for evaluating age-related declines in visual attention.' Psychology and Aging.\n\nThis research shows that regular UFOV training expands visual attention span and enables processing peripheral objects up to 35% faster."
+            },
+            "saccadic": {
+                "title": "Saccadic Eye Movements in Reading",
+                "description": "This groundbreaking study by Professor Keith Rayner scientifically proves that the main factors limiting reading speed are incorrect saccades and regressions (backward eye movements).\n\n📖 Rayner, K. (1998). 'Eye movements in reading and information processing: 20 years of research.' Psychological Bulletin.\n\nThis training targets 'return sweep' movements (transitioning from line end to new line start), reducing regressions by up to 40% and improving reading fluency."
+            },
+            "learnMore": "Learn More"
+        }
     }
 }

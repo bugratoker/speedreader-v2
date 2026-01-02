@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Pressable, Dimensions } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -19,6 +20,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTheme } from '../../theme';
 import { Play, Pause, RotateCcw, Zap, ArrowLeftRight, ArrowUpDown } from 'lucide-react-native';
+import { InfoButton } from '../InfoButton';
+import { AcademicModal } from '../AcademicModal';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -38,6 +41,7 @@ const SPEED_CONFIG: Record<SpeedLevel, { interval: number; label: string }> = {
 const TOTAL_JUMPS = 24;
 
 export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
+    const { t } = useTranslation();
     const { colors, spacing, fontFamily, fontSize, borderRadius, glows } = useTheme();
 
     const [isRunning, setIsRunning] = useState(false);
@@ -47,6 +51,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
     const [direction, setDirection] = useState<Direction>('horizontal');
     const [isComplete, setIsComplete] = useState(false);
     const [countdown, setCountdown] = useState<number | null>(null);
+    const [showAcademicModal, setShowAcademicModal] = useState(false);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -170,7 +175,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
 
     return (
         <View style={{ alignItems: 'center' }}>
-            {/* Instructions */}
+            {/* Instructions with Info Button */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
                 <Zap size={18} color={colors.secondary} strokeWidth={2} />
                 <Text
@@ -183,8 +188,9 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                         flex: 1,
                     }}
                 >
-                    Jump eyes between dots instantly. Head still, zero overshoot!
+                    {t('games.saccadic.instructions')}
                 </Text>
+                <InfoButton onPress={() => setShowAcademicModal(true)} size={24} />
             </View>
 
             {/* Progress Bar */}
@@ -234,7 +240,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                             color: colors.textMuted,
                         }}
                     >
-                        / {TOTAL_JUMPS} jumps
+                        / {TOTAL_JUMPS} {t('games.common.jumps')}
                     </Text>
                 </View>
 
@@ -255,7 +261,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                             color: colors.secondary,
                         }}
                     >
-                        {SPEED_CONFIG[speed].interval}ms interval
+                        {SPEED_CONFIG[speed].interval}ms {t('games.saccadic.interval')}
                     </Text>
                 </View>
             </View>
@@ -306,7 +312,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                                 marginTop: spacing.sm,
                             }}
                         >
-                            Get ready to jump!
+                            {t('games.saccadic.getReady')}
                         </Text>
                     </View>
                 )}
@@ -445,7 +451,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                             textAlign: 'center',
                         }}
                     >
-                        ⚡ This trains "Return Sweeps" for faster line-to-line reading and reduces involuntary regressions.
+                        ⚡ {t('games.saccadic.trainingTip')}
                     </Text>
                 </View>
             )}
@@ -471,7 +477,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                             color: colors.secondary,
                         }}
                     >
-                        ⚡ Great Saccades!
+                        ⚡ {t('games.saccadic.greatJob')}
                     </Text>
                     <Text
                         style={{
@@ -481,7 +487,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                             marginTop: spacing.xs,
                         }}
                     >
-                        {TOTAL_JUMPS} precision jumps at {SPEED_CONFIG[speed].interval}ms
+                        {TOTAL_JUMPS} precision {t('games.common.jumps')} at {SPEED_CONFIG[speed].interval}ms
                     </Text>
                     <Text
                         style={{
@@ -491,7 +497,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                             marginTop: spacing.xs,
                         }}
                     >
-                        Anti-regression training complete ✓
+                        {t('games.saccadic.completeMsg')}
                     </Text>
                 </View>
             )}
@@ -529,7 +535,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                             marginLeft: spacing.xs,
                         }}
                     >
-                        Horizontal
+                        {t('games.saccadic.horizontal')}
                     </Text>
                 </Pressable>
                 <Pressable
@@ -553,7 +559,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                             marginLeft: spacing.xs,
                         }}
                     >
-                        Vertical
+                        {t('games.saccadic.vertical')}
                     </Text>
                 </Pressable>
             </View>
@@ -589,7 +595,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                                 color: speed === level ? colors.white : colors.textMuted,
                             }}
                         >
-                            {SPEED_CONFIG[level].label}
+                            {t(`games.saccadic.speed.${level}`)}
                         </Text>
                     </Pressable>
                 ))}
@@ -629,7 +635,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                             marginLeft: spacing.sm,
                         }}
                     >
-                        {isRunning ? 'Pause' : isComplete ? 'Restart' : 'Start'}
+                        {isRunning ? t('games.common.pause') : isComplete ? t('games.common.restart') : t('games.common.start')}
                     </Text>
                 </Pressable>
 
@@ -649,6 +655,15 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                     <RotateCcw size={20} color={colors.textMuted} strokeWidth={2} />
                 </Pressable>
             </View>
+
+            {/* Academic Info Modal */}
+            <AcademicModal
+                visible={showAcademicModal}
+                onClose={() => setShowAcademicModal(false)}
+                title={t('games.academic.saccadic.title')}
+                description={t('games.academic.saccadic.description')}
+                researchLink="https://pubmed.ncbi.nlm.nih.gov/9839353/"
+            />
         </View>
     );
 };

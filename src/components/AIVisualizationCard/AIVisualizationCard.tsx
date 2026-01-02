@@ -8,7 +8,12 @@ import { View, Text, StyleSheet, ImageBackground } from 'react-native';
 import { Sparkles, Image as ImageIcon } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing, borderRadius, glows } from '../../theme';
 
+import { useTranslation } from 'react-i18next';
+// ... other imports
+
 export const AIVisualizationCard: React.FC = () => {
+    const { t } = useTranslation();
+
     return (
         <View style={styles.container}>
             {/* Placeholder gradient background */}
@@ -23,11 +28,11 @@ export const AIVisualizationCard: React.FC = () => {
                 <View style={styles.glassOverlay}>
                     <View style={styles.aiLabel}>
                         <Sparkles size={14} color={colors.secondary} strokeWidth={2} />
-                        <Text style={styles.aiLabelText}>AI Generated</Text>
+                        <Text style={styles.aiLabelText}>{t('aiCard.label')}</Text>
                     </View>
-                    <Text style={styles.overlayTitle}>Every 300 Words</Text>
+                    <Text style={styles.overlayTitle}>{t('aiCard.title')}</Text>
                     <Text style={styles.overlaySubtitle}>
-                        Cinematic visuals bring your reading to life
+                        {t('aiCard.subtitle')}
                     </Text>
                 </View>
             </View>
@@ -37,7 +42,7 @@ export const AIVisualizationCard: React.FC = () => {
                 <View style={styles.progressBar}>
                     <View style={styles.progressFill} />
                 </View>
-                <Text style={styles.progressText}>Word 245 / 300</Text>
+                <Text style={styles.progressText}>{t('aiCard.progress', { current: 245, total: 300 })}</Text>
             </View>
         </View>
     );

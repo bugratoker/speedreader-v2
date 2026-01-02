@@ -117,7 +117,7 @@ export const AssessmentScreen: React.FC<{ onComplete?: (wpm: number) => void }> 
                 {state === 'intro' && (
                     <View style={styles.introContainer}>
                         <Text style={[styles.instructions, { fontFamily: fontFamily.uiRegular, color: colors.textMuted }]}>
-                            Words will appear one at a time. Adjust the speed until it feels comfortable. This will be your baseline reading speed.
+                            {t('assessment.instructions')}
                         </Text>
 
                         {/* WPM Selector */}
@@ -185,7 +185,7 @@ export const AssessmentScreen: React.FC<{ onComplete?: (wpm: number) => void }> 
                         </View>
 
                         <Text style={[styles.controlHint, { fontFamily: fontFamily.uiRegular, color: colors.textDim }]}>
-                            Adjust speed while reading until comfortable
+                            {t('assessment.hint')}
                         </Text>
                     </View>
                 )}

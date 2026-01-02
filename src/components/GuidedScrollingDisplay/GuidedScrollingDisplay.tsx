@@ -7,7 +7,8 @@ import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated, LayoutChangeEvent, TouchableOpacity, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Hand, Eye, EyeOff } from 'lucide-react-native';
-import { colors, fontFamily, spacing, borderRadius } from '../../theme';
+import { fontFamily, spacing, borderRadius } from '../../theme';
+import { useTheme } from '../../theme';
 
 export interface GuidedScrollingDisplayProps {
     words: string[];
@@ -32,9 +33,12 @@ export const GuidedScrollingDisplay: React.FC<GuidedScrollingDisplayProps> = ({
     isPlaying,
     containerStyle,
     textSize = 16,
-    cursorColor = colors.primary,
+    cursorColor: propCursorColor,
     onUserScroll,
 }) => {
+    const { colors } = useTheme();
+    const cursorColor = propCursorColor || colors.primary;
+
     const scrollViewRef = useRef<ScrollView>(null);
     const wordLayouts = useRef<Map<number, WordLayout>>(new Map());
     const scrollOffset = useRef(0);
@@ -155,7 +159,7 @@ export const GuidedScrollingDisplay: React.FC<GuidedScrollingDisplayProps> = ({
     }, [currentWordIndex, positionCursor]);
 
     return (
-        <View style={[styles.wrapper, containerStyle]}>
+        <View style={[styles.wrapper, containerStyle, { backgroundColor: colors.surface, borderColor: colors.glassBorder }]}>
             {/* Top gradient */}
             <LinearGradient
                 colors={[colors.surface, 'transparent']}
@@ -165,7 +169,7 @@ export const GuidedScrollingDisplay: React.FC<GuidedScrollingDisplayProps> = ({
 
             {/* Cursor toggle button */}
             <TouchableOpacity
-                style={styles.cursorToggle}
+                style={[styles.cursorToggle, { backgroundColor: colors.surface, borderColor: colors.glassBorder }]}
                 onPress={() => setShowCursor(!showCursor)}
                 activeOpacity={0.7}
             >
@@ -265,8 +269,8 @@ const styles = StyleSheet.create({
         flex: 1,
         borderRadius: borderRadius.bento,
         borderWidth: 1,
-        borderColor: colors.glassBorder,
-        backgroundColor: colors.surface,
+        // borderColor: colors.glassBorder, // inline
+        // backgroundColor: colors.surface, // inline
         overflow: 'hidden',
     },
     container: {
@@ -283,10 +287,10 @@ const styles = StyleSheet.create({
         right: 8,
         zIndex: 20,
         padding: 8,
-        backgroundColor: colors.surface,
+        // backgroundColor: colors.surface, // inline
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: colors.glassBorder,
+        // borderColor: colors.glassBorder, // inline
     },
     wordsContainer: {
         flexDirection: 'row',
@@ -328,7 +332,7 @@ const styles = StyleSheet.create({
     },
     progressBar: {
         height: 3,
-        backgroundColor: colors.surface,
+        // backgroundColor: colors.surface, // inline
     },
     progressFill: {
         height: '100%',

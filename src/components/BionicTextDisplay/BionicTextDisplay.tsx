@@ -1,13 +1,10 @@
-/**
- * Bionic Text Display Component - Dynamic and Interactive
- * Features: Bold first letters with WPM-based color, progress highlighting
- */
-
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, NativeSyntheticEvent, NativeScrollEvent, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BionicWord } from '../../engine/types';
 import { colors, fontFamily, spacing, borderRadius } from '../../theme';
+import { useTheme } from '../../theme';
+import { useTranslation } from 'react-i18next';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -23,7 +20,7 @@ export interface BionicTextDisplayProps {
 /**
  * Get color based on WPM - slower = cyan, faster = magenta
  */
-const getWpmColor = (wpm: number = 300): string => {
+const getWpmColor = (wpm: number = 300, colors: any): string => {
     if (wpm <= 150) return colors.primary; // Cyan
     if (wpm <= 250) return '#00E5FF';  // Light cyan
     if (wpm <= 350) return '#00BFA5';  // Teal
@@ -35,7 +32,7 @@ const getWpmColor = (wpm: number = 300): string => {
 /**
  * Get progress-based color interpolation
  */
-const getProgressColor = (progress: number, baseColor: string): string => {
+const getProgressColor = (progress: number, baseColor: string, colors: any): string => {
     // Progress colors from cool to warm
     const progressColors = [
         colors.primary,    // 0-20%: Cyan
@@ -57,14 +54,16 @@ export const BionicTextDisplay: React.FC<BionicTextDisplayProps> = ({
     showGradients = true,
     wpm = 300,
 }) => {
+    const { colors } = useTheme();
+    const { t } = useTranslation();
     const scrollViewRef = useRef<ScrollView>(null);
     const [scrollProgress, setScrollProgress] = useState(0);
     const [contentHeight, setContentHeight] = useState(0);
     const [containerHeight, setContainerHeight] = useState(0);
 
     // Calculate colors based on WPM and progress
-    const boldColor = useMemo(() => getWpmColor(wpm), [wpm]);
-    const progressColor = useMemo(() => getProgressColor(scrollProgress, boldColor), [scrollProgress, boldColor]);
+    const boldColor = useMemo(() => getWpmColor(wpm, colors), [wpm, colors]);
+    const progressColor = useMemo(() => getProgressColor(scrollProgress, boldColor, colors), [scrollProgress, boldColor, colors]);
 
     // Calculate which words are "read" based on scroll position
     const readWordCount = useMemo(() => {
@@ -84,7 +83,7 @@ export const BionicTextDisplay: React.FC<BionicTextDisplayProps> = ({
     };
 
     return (
-        <View style={[styles.wrapper, containerStyle]}>
+        <View style={[styles.wrapper, containerStyle, { backgroundColor: colors.surface, borderColor: colors.glassBorder }]}>
             {/* Top gradient */}
             {showGradients && (
                 <LinearGradient
@@ -107,7 +106,7 @@ export const BionicTextDisplay: React.FC<BionicTextDisplayProps> = ({
                 {/* WPM + Progress badge */}
                 <View style={[styles.wpmBadge, { borderColor: progressColor }]}>
                     <Text style={[styles.wpmText, { color: progressColor }]}>
-                        {wpm} WPM • {Math.round(scrollProgress)}%
+                        {wpm} {t('common.wpm')} • {Math.round(scrollProgress)}%
                     </Text>
                 </View>
 
@@ -165,7 +164,7 @@ export const BionicTextDisplay: React.FC<BionicTextDisplayProps> = ({
             )}
 
             {/* Speed bar - now shows progress color */}
-            <View style={styles.speedBar}>
+            <View style={[styles.speedBar, { backgroundColor: colors.surface }]}>
                 <View
                     style={[
                         styles.speedFill,
@@ -185,8 +184,8 @@ const styles = StyleSheet.create({
         flex: 1,
         borderRadius: borderRadius.bento,
         borderWidth: 1,
-        borderColor: colors.glassBorder,
-        backgroundColor: colors.surface,
+        // borderColor: colors.glassBorder, // inline
+        // backgroundColor: colors.surface, // inline
         overflow: 'hidden',
     },
     container: {
@@ -219,7 +218,7 @@ const styles = StyleSheet.create({
     normalPart: {
         fontFamily: fontFamily.reading,
         lineHeight: 32,
-        color: colors.textMuted,
+        // color: colors.textMuted, // inline or dynamic
     },
     topGradient: {
         position: 'absolute',
@@ -239,7 +238,7 @@ const styles = StyleSheet.create({
     },
     speedBar: {
         height: 3,
-        backgroundColor: colors.surface,
+        // backgroundColor: colors.surface, // inline
     },
     speedFill: {
         height: '100%',

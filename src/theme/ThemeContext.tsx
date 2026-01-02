@@ -3,8 +3,10 @@
  * Dependency Inversion: Components depend on abstraction (context) not concrete theme values
  */
 
-import React, { createContext, useContext, ReactNode } from 'react';
-import { colors } from './colors';
+import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { Appearance, ColorSchemeName } from 'react-native';
+import { colors as darkColors, ThemeColors } from './colors';
+import { lightColors } from './lightColors';
 import { fontFamily, fontSize, lineHeight, fontWeight } from './typography';
 import { spacing, borderRadius, layout } from './spacing';
 import { shadows, glows } from './shadows';
@@ -12,8 +14,13 @@ import { shadows, glows } from './shadows';
 /**
  * Theme interface (Open/Closed: can be extended without modification)
  */
+export type ThemeMode = 'light' | 'dark';
+
 export interface Theme {
-    colors: typeof colors;
+    mode: ThemeMode;
+    toggleTheme: () => void;
+    setTheme: (mode: ThemeMode) => void;
+    colors: ThemeColors;
     fontFamily: typeof fontFamily;
     fontSize: typeof fontSize;
     lineHeight: typeof lineHeight;
@@ -26,7 +33,10 @@ export interface Theme {
 }
 
 const defaultTheme: Theme = {
-    colors,
+    mode: 'dark',
+    toggleTheme: () => { },
+    setTheme: () => { },
+    colors: darkColors,
     fontFamily,
     fontSize,
     lineHeight,
@@ -53,8 +63,24 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     children,
     theme: customTheme,
 }) => {
+    const [mode, setModeState] = useState<ThemeMode>('dark');
+
+    const toggleTheme = () => {
+        setModeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    };
+
+    const setTheme = (newMode: ThemeMode) => {
+        setModeState(newMode);
+    };
+
+    const currentColors = mode === 'light' ? lightColors : darkColors;
+
     const mergedTheme: Theme = {
         ...defaultTheme,
+        mode,
+        toggleTheme,
+        setTheme,
+        colors: currentColors,
         ...customTheme,
     };
 

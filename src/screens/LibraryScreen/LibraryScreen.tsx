@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { Library as LibraryIcon } from 'lucide-react-native';
 import { useTheme } from '../../theme';
 
 export const LibraryScreen: React.FC = () => {
+    const { t } = useTranslation();
     const { colors, spacing, fontFamily, fontSize } = useTheme();
     const insets = useSafeAreaInsets();
 
@@ -28,7 +30,7 @@ export const LibraryScreen: React.FC = () => {
                     marginTop: spacing.md,
                 }}
             >
-                Library
+                {t('library.title')}
             </Text>
             <Text
                 style={{
@@ -39,7 +41,7 @@ export const LibraryScreen: React.FC = () => {
                     textAlign: 'center',
                 }}
             >
-                Your books and news feed
+                {t('library.subtitle')}
             </Text>
         </View>
     );

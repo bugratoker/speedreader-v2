@@ -8,7 +8,8 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { useTranslation } from 'react-i18next';
 import { Zap, Eye, Layers, Activity } from 'lucide-react-native';
 import { ReadingMode, MODE_LABELS } from '../../engine/types';
-import { colors, fontFamily, fontSize, spacing, borderRadius } from '../../theme';
+import { fontFamily, fontSize, spacing, borderRadius } from '../../theme';
+import { useTheme } from '../../theme';
 
 export interface ReadingModeSelectorProps {
     currentMode: ReadingMode;
@@ -16,8 +17,8 @@ export interface ReadingModeSelectorProps {
     disabled?: boolean;
 }
 
-const ModeIcon: React.FC<{ mode: ReadingMode; isActive: boolean }> = ({ mode, isActive }) => {
-    const color = isActive ? colors.background : colors.textMuted;
+const ModeIcon: React.FC<{ mode: ReadingMode; isActive: boolean; activeColor: string; inactiveColor: string }> = ({ mode, isActive, activeColor, inactiveColor }) => {
+    const color = isActive ? activeColor : inactiveColor;
     const strokeWidth = isActive ? 2.5 : 2;
 
     switch (mode) {
@@ -39,11 +40,12 @@ export const ReadingModeSelector: React.FC<ReadingModeSelectorProps> = ({
     onModeChange,
     disabled = false,
 }) => {
+    const { colors } = useTheme();
     const { i18n } = useTranslation();
     const lang = (i18n.language === 'tr' ? 'tr' : 'en') as 'en' | 'tr';
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.glassBorder }]}>
             {MODES.map((mode) => {
                 const isActive = mode === currentMode;
                 const label = MODE_LABELS[mode][lang];
@@ -55,12 +57,17 @@ export const ReadingModeSelector: React.FC<ReadingModeSelectorProps> = ({
                         activeOpacity={disabled ? 1 : 0.7}
                         style={[
                             styles.tab,
-                            isActive && styles.tabActive,
+                            isActive && [styles.tabActive, { backgroundColor: colors.primary }],
                             disabled && styles.tabDisabled,
                         ]}
                     >
                         <View style={styles.tabContent}>
-                            <ModeIcon mode={mode} isActive={isActive} />
+                            <ModeIcon
+                                mode={mode}
+                                isActive={isActive}
+                                activeColor={colors.background}
+                                inactiveColor={colors.textMuted}
+                            />
                             <Text
                                 style={[
                                     styles.tabLabel,
@@ -83,10 +90,10 @@ export const ReadingModeSelector: React.FC<ReadingModeSelectorProps> = ({
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
-        backgroundColor: colors.surface,
+        // backgroundColor: colors.surface, // inline
         borderRadius: borderRadius.lg,
         borderWidth: 1,
-        borderColor: colors.glassBorder,
+        // borderColor: colors.glassBorder, // inline
         padding: 4,
     },
     tab: {
@@ -98,7 +105,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     tabActive: {
-        backgroundColor: colors.primary,
+        // backgroundColor: colors.primary, // inline
     },
     tabDisabled: {
         opacity: 0.5,

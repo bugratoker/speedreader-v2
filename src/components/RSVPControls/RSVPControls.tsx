@@ -5,8 +5,10 @@
 
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Play, Pause, Plus, Minus } from 'lucide-react-native';
-import { colors, fontFamily, fontSize, spacing, borderRadius, glows } from '../../theme';
+import { fontFamily, fontSize, spacing, borderRadius, glows } from '../../theme';
+import { useTheme } from '../../theme';
 
 export interface RSVPControlsProps {
     wpm: number;
@@ -27,6 +29,8 @@ export const RSVPControls: React.FC<RSVPControlsProps> = ({
     showWpmLabel = true,
     size = 'medium',
 }) => {
+    const { colors } = useTheme();
+    const { t } = useTranslation();
     const sizes = {
         small: { button: 40, pause: 52, icon: 18, pauseIcon: 22 },
         medium: { button: 56, pause: 72, icon: 24, pauseIcon: 28 },
@@ -62,7 +66,7 @@ export const RSVPControls: React.FC<RSVPControlsProps> = ({
                         {wpm}
                     </Text>
                     <Text style={[styles.wpmLabel, { fontFamily: fontFamily.uiMedium, color: colors.textMuted }]}>
-                        WPM
+                        {t('common.wpm')}
                     </Text>
                 </View>
             )}

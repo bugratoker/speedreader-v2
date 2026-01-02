@@ -4,7 +4,7 @@
  */
 
 // Available reading modes
-export type ReadingMode = 'rsvp' | 'bionic' | 'chunking' | 'guided';
+export type ReadingMode = 'rsvp' | 'bionic' | 'chunk' | 'guided';
 
 // Reading engine configuration
 export interface ReadingEngineConfig {
@@ -45,7 +45,7 @@ export interface ReadingEngineActions {
 export interface ReadingEngine extends ReadingEngineState, ReadingEngineActions {
     // Mode-specific data
     currentWord?: string;      // RSVP
-    currentChunk?: string[];   // Chunking
+    currentChunk?: string[];   // Chunk
     bionicText?: BionicWord[]; // Bionic
     words: string[];
 }
@@ -68,7 +68,7 @@ export const DEFAULT_CHUNK_SIZE = 3;
 export const MODE_LABELS: Record<ReadingMode, { en: string; tr: string }> = {
     rsvp: { en: 'RSVP', tr: 'RSVP' },
     bionic: { en: 'Bionic', tr: 'Biyonik' },
-    chunking: { en: 'Chunking', tr: 'Parçalama' },
+    chunk: { en: 'Chunk', tr: 'Parçalama' },
     guided: { en: 'Guided', tr: 'Rehberli' },
 };
 
@@ -82,7 +82,7 @@ export const MODE_DESCRIPTIONS: Record<ReadingMode, { en: string; tr: string }> 
         en: 'Bold first letters for faster reading',
         tr: 'Daha hızlı okuma için kalın ilk harfler'
     },
-    chunking: {
+    chunk: {
         en: 'Groups of 2-3 words together',
         tr: '2-3 kelimelik gruplar halinde'
     },

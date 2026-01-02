@@ -25,14 +25,14 @@ const ModeIcon: React.FC<{ mode: ReadingMode; isActive: boolean }> = ({ mode, is
             return <Zap size={14} color={color} strokeWidth={strokeWidth} />;
         case 'bionic':
             return <Eye size={14} color={color} strokeWidth={strokeWidth} />;
-        case 'chunking':
+        case 'chunk':
             return <Layers size={14} color={color} strokeWidth={strokeWidth} />;
         case 'guided':
             return <Activity size={14} color={color} strokeWidth={strokeWidth} />;
     }
 };
 
-const MODES: ReadingMode[] = ['rsvp', 'bionic', 'chunking', 'guided'];
+const MODES: ReadingMode[] = ['rsvp', 'bionic', 'chunk', 'guided'];
 
 export const ReadingModeSelector: React.FC<ReadingModeSelectorProps> = ({
     currentMode,

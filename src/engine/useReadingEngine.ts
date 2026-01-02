@@ -50,19 +50,19 @@ export const useReadingEngine = (config: ReadingEngineConfig): ReadingEngine => 
     const bionicWords = textToBionicWords(text);
 
     // Total items depends on mode
-    const totalItems = mode === 'chunking' ? chunks.length : words.length;
+    const totalItems = mode === 'chunk' ? chunks.length : words.length;
 
     // Progress calculation
     const progress = totalItems > 0 ? ((currentIndex + 1) / totalItems) * 100 : 0;
 
     // Current display data
     const currentWord = words[currentIndex] || '';
-    const currentChunk = mode === 'chunking' ? chunks[currentIndex] : undefined;
+    const currentChunk = mode === 'chunk' ? chunks[currentIndex] : undefined;
 
     // Calculate delay based on WPM and mode
     const getDelay = useCallback(() => {
         const baseDelay = 60000 / wpm;
-        if (mode === 'chunking') {
+        if (mode === 'chunk') {
             // Multiply by chunk size for chunking mode
             return baseDelay * chunkSize;
         }

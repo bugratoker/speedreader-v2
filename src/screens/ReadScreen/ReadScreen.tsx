@@ -80,7 +80,7 @@ export const ReadScreen: React.FC = () => {
                     </View>
                 );
 
-            case 'chunking':
+            case 'chunk':
                 return (
                     <View style={[styles.displayContainer, { backgroundColor: colors.surface, borderColor: colors.glassBorder }]}>
                         <ChunkDisplay

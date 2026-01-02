@@ -9,3 +9,9 @@ export * from './BionicTextDisplay';
 export * from './ChunkDisplay';
 export * from './ReadingModeSelector';
 export * from './GuidedScrollingDisplay';
+
+// Training Lab Components
+export * from './SchulteTable';
+export * from './SaccadicJumps';
+export * from './EyeStretch';
+export * from './PeripheralCatch';

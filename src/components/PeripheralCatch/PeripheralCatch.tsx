@@ -1,18 +1,15 @@
 /**
- * Peripheral Catch - Parafoveal Vision Training
- * Identify words in EXTREME peripheral vision without breaking central focus.
+ * Peripheral Catch - Parafoveal Vision Training (v2 - Sequence Mode)
+ * 
+ * NEW MECHANIC: Show 2-3 words sequentially in peripheral vision,
+ * then ask user to recall them in the correct order.
  * 
  * Academic Basis: Research indicates that speed readers utilize "Parafoveal Processing"
  * to pre-process upcoming words. This drill expands the visual span beyond the foveal center.
- * 
- * Key Training Principles:
- * - Words appear at EXTREME edges (true peripheral vision, not foveal)
- * - Similar-looking distractor words to prevent letter-guessing
- * - 8-direction positioning for complete peripheral span training
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, Pressable, Dimensions } from 'react-native';
+import { View, Text, Pressable, Dimensions, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Animated, {
     useSharedValue,
@@ -24,8 +21,7 @@ import Animated, {
     FadeOut,
 } from 'react-native-reanimated';
 import { useTheme } from '../../theme';
-import { Play, RotateCcw, Crosshair, CheckCircle, XCircle, Eye, TrendingUp, AlertCircle } from 'lucide-react-native';
-import { HUDOverlay } from './HUDOverlay';
+import { Play, RotateCcw, CheckCircle, XCircle, Eye } from 'lucide-react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -33,65 +29,79 @@ interface PeripheralCatchProps {
     onComplete?: (score: number, total: number) => void;
 }
 
-// 8 positions for complete peripheral coverage
 type Position = 'left' | 'right' | 'top' | 'bottom' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
-
 type Difficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 
-const DIFFICULTY_CONFIG: Record<Difficulty, {
+interface DifficultyConfig {
     displayTime: number;
-    label: string;
-    description: string;
+    wordsPerRound: number;
     rounds: number;
     fontSize: number;
-}> = {
-    beginner: { displayTime: 2000, label: 'Beginner', description: '2.0s', rounds: 8, fontSize: 20 },
-    intermediate: { displayTime: 1200, label: 'Intermediate', description: '1.2s', rounds: 10, fontSize: 18 },
-    advanced: { displayTime: 600, label: 'Advanced', description: '0.6s', rounds: 12, fontSize: 17 },
-    expert: { displayTime: 300, label: 'Expert', description: '0.3s', rounds: 15, fontSize: 16 },
+    description: string;
+}
+
+const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
+    beginner: { displayTime: 1000, wordsPerRound: 2, rounds: 8, fontSize: 17, description: '2 kelime • 1.0s' },
+    intermediate: { displayTime: 600, wordsPerRound: 2, rounds: 10, fontSize: 16, description: '2 kelime • 0.6s' },
+    advanced: { displayTime: 500, wordsPerRound: 3, rounds: 12, fontSize: 15, description: '3 kelime • 0.5s' },
+    expert: { displayTime: 300, wordsPerRound: 3, rounds: 15, fontSize: 14, description: '3 kelime • 0.3s' },
 };
 
-const FEEDBACK_TIME = 500;
+const FEEDBACK_TIME = 600;
+const WORD_GAP_TIME = 300; // Gap between words
+
+// All 8 positions for peripheral placement
+const ALL_POSITIONS: Position[] = ['left', 'right', 'top', 'bottom', 'topLeft', 'topRight', 'bottomLeft', 'bottomRight'];
 
 export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) => {
     const { t } = useTranslation();
-    const wordGroupsData = t('games.peripheral.wordGroups', { returnObjects: true });
-    // Safety check to ensure wordGroups is an array
-    const wordGroups = Array.isArray(wordGroupsData) ? (wordGroupsData as { target: string; distractors: string[] }[]) : [];
+    const wordPoolData = t('games.peripheral.wordPool', { returnObjects: true });
+    const wordPool = Array.isArray(wordPoolData) ? (wordPoolData as string[]) : [];
 
     const { colors, spacing, fontFamily, fontSize, borderRadius, glows } = useTheme();
 
-    const [gameState, setGameState] = useState<'ready' | 'countdown' | 'playing' | 'feedback' | 'complete'>('ready');
+    // Game states
+    const [gameState, setGameState] = useState<'ready' | 'countdown' | 'showing' | 'answering' | 'feedback' | 'complete'>('ready');
     const [difficulty, setDifficulty] = useState<Difficulty>('beginner');
     const [countdown, setCountdown] = useState(3);
-    const [currentWord, setCurrentWord] = useState<string | null>(null);
-    const [wordPosition, setWordPosition] = useState<Position>('left');
 
-
-
+    // Round state
     const [round, setRound] = useState(0);
     const [score, setScore] = useState(0);
-    const [showFeedback, setShowFeedback] = useState<'correct' | 'wrong' | null>(null);
-    const [options, setOptions] = useState<string[]>([]);
-    const [waitingForInput, setWaitingForInput] = useState(false);
     const [streak, setStreak] = useState(0);
     const [bestStreak, setBestStreak] = useState(0);
+
+    // Sequence state
+    const [sequenceWords, setSequenceWords] = useState<string[]>([]);
+    const [sequencePositions, setSequencePositions] = useState<Position[]>([]);
+    const [currentShowingIndex, setCurrentShowingIndex] = useState(-1);
+    const [userAnswers, setUserAnswers] = useState<string[]>([]);
+    const [showFeedback, setShowFeedback] = useState<'correct' | 'wrong' | null>(null);
     const [usedWords, setUsedWords] = useState<Set<string>>(new Set());
 
+    // Refs
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const correctWordRef = useRef<string>('');
     const focusPulse = useSharedValue(1);
     const focusRingScale = useSharedValue(1);
     const focusRingOpacity = useSharedValue(0.3);
 
-    const areaWidth = SCREEN_WIDTH - spacing.md * 2; // Maximize width (only small padding)
-    const areaHeight = 400; // Taller for better vertical peripheral range
-    const totalRounds = DIFFICULTY_CONFIG[difficulty].rounds;
-    const wordFontSize = DIFFICULTY_CONFIG[difficulty].fontSize; // Reset to base size (User feedback: "too big")
+    // Layout
+    const areaWidth = SCREEN_WIDTH - spacing.md * 2;
+    const areaHeight = 400;
+    const config = DIFFICULTY_CONFIG[difficulty];
+    const totalRounds = config.rounds;
+    const wordsNeeded = config.wordsPerRound;
 
-    // Animate focus ring when waiting for input
+    // Cleanup
     useEffect(() => {
-        if (waitingForInput) {
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+    }, []);
+
+    // Animate focus ring during answering
+    useEffect(() => {
+        if (gameState === 'answering') {
             focusRingScale.value = withRepeat(
                 withSequence(
                     withTiming(1.15, { duration: 500 }),
@@ -112,89 +122,114 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
             focusRingScale.value = withTiming(1, { duration: 200 });
             focusRingOpacity.value = withTiming(0.3, { duration: 200 });
         }
-    }, [waitingForInput, focusRingScale, focusRingOpacity]);
+    }, [gameState, focusRingScale, focusRingOpacity]);
 
-    const getRandomWordGroup = useCallback(() => {
-        const availableGroups = wordGroups.filter(g => !usedWords.has(g.target));
-        if (availableGroups.length === 0) {
-            setUsedWords(new Set()); // Reset if all words used
-            return wordGroups[Math.floor(Math.random() * wordGroups.length)];
+    // Generate random words for sequence
+    const generateSequence = useCallback(() => {
+        const available = wordPool.filter(w => !usedWords.has(w));
+        const pool = available.length >= wordsNeeded ? available : wordPool;
+
+        const words: string[] = [];
+        const positions: Position[] = [];
+        const usedPositions = new Set<Position>();
+
+        for (let i = 0; i < wordsNeeded; i++) {
+            // Pick random word
+            const randomIndex = Math.floor(Math.random() * pool.length);
+            const word = pool.splice(randomIndex, 1)[0] || wordPool[i];
+            words.push(word);
+
+            // Pick unique position
+            const availablePositions = ALL_POSITIONS.filter(p => !usedPositions.has(p));
+            const pos = availablePositions[Math.floor(Math.random() * availablePositions.length)];
+            positions.push(pos);
+            usedPositions.add(pos);
         }
-        return availableGroups[Math.floor(Math.random() * availableGroups.length)];
-    }, [usedWords, wordGroups]);
 
-    const getRandomPosition = useCallback((): Position => {
-        // 8 positions for complete peripheral training
-        const positions: Position[] = [
-            'left', 'right', 'top', 'bottom',
-            'topLeft', 'topRight', 'bottomLeft', 'bottomRight'
-        ];
-        return positions[Math.floor(Math.random() * positions.length)];
-    }, []);
+        return { words, positions };
+    }, [wordPool, usedWords, wordsNeeded]);
 
-    const generateOptions = useCallback((wordGroup: { target: string; distractors: string[] }): string[] => {
-        // Use the word's specific similar-looking distractors
-        const allOptions = [...wordGroup.distractors.slice(0, 3), wordGroup.target];
-        return allOptions.sort(() => Math.random() - 0.5);
-    }, []);
+    // Show words one by one
+    const showNextWord = useCallback((index: number, words: string[], positions: Position[]) => {
+        if (index >= words.length) {
+            // All words shown, switch to answering
+            setCurrentShowingIndex(-1);
+            setGameState('answering');
+            return;
+        }
 
-    const startRound = useCallback(() => {
-        const wordGroup = getRandomWordGroup();
-        const position = getRandomPosition();
-
-        correctWordRef.current = wordGroup.target;
-        setCurrentWord(wordGroup.target);
-        setWordPosition(position);
-        setOptions(generateOptions(wordGroup));
-        setWaitingForInput(false);
-        setShowFeedback(null);
-        setGameState('playing');
-        setUsedWords(prev => new Set(prev).add(wordGroup.target));
-
-        // Focus pulse when word appears
+        setCurrentShowingIndex(index);
         focusPulse.value = withSequence(
-            withTiming(1.3, { duration: 150 }), // Stronger pulse
-            withTiming(1, { duration: 150 })
+            withTiming(1.2, { duration: 100 }),
+            withTiming(1, { duration: 100 })
         );
 
-        // Hide word after display time
+        // Hide after display time, then show next
         timeoutRef.current = setTimeout(() => {
-            setCurrentWord(null);
-            setWaitingForInput(true);
-        }, DIFFICULTY_CONFIG[difficulty].displayTime);
-    }, [getRandomWordGroup, getRandomPosition, generateOptions, focusPulse, difficulty]);
+            setCurrentShowingIndex(-1);
+            timeoutRef.current = setTimeout(() => {
+                showNextWord(index + 1, words, positions);
+            }, WORD_GAP_TIME);
+        }, config.displayTime);
+    }, [config.displayTime, focusPulse]);
 
-    const handleOptionPress = useCallback((selectedWord: string) => {
-        if (!waitingForInput) return;
+    // Start a round
+    const startRound = useCallback(() => {
+        const { words, positions } = generateSequence();
+        setSequenceWords(words);
+        setSequencePositions(positions);
+        setUserAnswers([]);
+        setShowFeedback(null);
+        setGameState('showing');
 
-        setWaitingForInput(false);
-        const isCorrect = selectedWord === correctWordRef.current;
+        // Mark words as used
+        setUsedWords(prev => {
+            const next = new Set(prev);
+            words.forEach(w => next.add(w));
+            return next;
+        });
 
-        setShowFeedback(isCorrect ? 'correct' : 'wrong');
-        setGameState('feedback');
+        // Start showing sequence
+        showNextWord(0, words, positions);
+    }, [generateSequence, showNextWord]);
 
-        if (isCorrect) {
-            setScore(s => s + 1);
-            setStreak(s => {
-                const newStreak = s + 1;
-                if (newStreak > bestStreak) setBestStreak(newStreak);
-                return newStreak;
-            });
-        } else {
-            setStreak(0);
-        }
+    // Handle user answer
+    const handleAnswerPress = useCallback((word: string) => {
+        if (gameState !== 'answering') return;
 
-        timeoutRef.current = setTimeout(() => {
-            const nextRound = round + 1;
-            if (nextRound >= totalRounds) {
-                setGameState('complete');
-                onComplete?.(score + (isCorrect ? 1 : 0), totalRounds);
+        const newAnswers = [...userAnswers, word];
+        setUserAnswers(newAnswers);
+
+        // Check if all answers given
+        if (newAnswers.length >= sequenceWords.length) {
+            const isCorrect = newAnswers.every((ans, idx) => ans === sequenceWords[idx]);
+            setShowFeedback(isCorrect ? 'correct' : 'wrong');
+            setGameState('feedback');
+
+            if (isCorrect) {
+                setScore(s => s + 1);
+                setStreak(s => {
+                    const newStreak = s + 1;
+                    if (newStreak > bestStreak) setBestStreak(newStreak);
+                    return newStreak;
+                });
             } else {
-                setRound(nextRound);
-                startRound();
+                setStreak(0);
             }
-        }, FEEDBACK_TIME);
-    }, [waitingForInput, round, score, startRound, onComplete, totalRounds, bestStreak]);
+
+            // Next round or complete
+            timeoutRef.current = setTimeout(() => {
+                const nextRound = round + 1;
+                if (nextRound >= totalRounds) {
+                    setGameState('complete');
+                    onComplete?.(score + (isCorrect ? 1 : 0), totalRounds);
+                } else {
+                    setRound(nextRound);
+                    startRound();
+                }
+            }, FEEDBACK_TIME);
+        }
+    }, [gameState, userAnswers, sequenceWords, round, totalRounds, score, bestStreak, onComplete, startRound]);
 
     // Countdown effect
     useEffect(() => {
@@ -208,39 +243,27 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
         }
     }, [gameState, countdown, startRound]);
 
-    useEffect(() => {
-        return () => {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
-        };
-    }, []);
-
     const handleStart = () => {
-        if (gameState === 'complete') {
-            handleReset();
-        }
+        if (gameState === 'complete') handleReset();
         setCountdown(3);
         setGameState('countdown');
     };
 
     const handleReset = () => {
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-        }
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
         setGameState('ready');
-        setCurrentWord(null);
-        setWordPosition('left');
         setRound(0);
         setScore(0);
-        setShowFeedback(null);
-        setOptions([]);
-        setWaitingForInput(false);
         setStreak(0);
+        setSequenceWords([]);
+        setSequencePositions([]);
+        setCurrentShowingIndex(-1);
+        setUserAnswers([]);
+        setShowFeedback(null);
         setUsedWords(new Set());
-        correctWordRef.current = '';
     };
 
+    // Animated styles
     const focusPulseStyle = useAnimatedStyle(() => ({
         transform: [{ scale: focusPulse.value }],
     }));
@@ -250,71 +273,34 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
         opacity: focusRingOpacity.value,
     }));
 
-    // EXTREME edge positioning for true peripheral training - PUSH TO LIMITS
-    // SAFE ZONES: Ensure word center doesn't clip. Approx 40px padding used.
+    // Position styling - EXTREME edges
     const getWordStyle = (position: Position) => {
+        const edgePadding = 8;
+        const midX = areaWidth / 2;
+        const midY = areaHeight / 2;
         const baseStyle = {
             position: 'absolute' as const,
             fontFamily: fontFamily.uiBold,
-            fontSize: wordFontSize,
-            color: colors.text, // High contrast text
-            textShadowColor: colors.background, // Outline effect for clarity
+            fontSize: config.fontSize,
+            color: colors.text,
+            textShadowColor: colors.background,
             textShadowOffset: { width: 1, height: 1 },
-            textShadowRadius: 1,
+            textShadowRadius: 2,
         };
 
-        const edgePadding = 32; // Increased padding to prevent clipping (User feedback)
-        const midX = areaWidth / 2;
-        const midY = areaHeight / 2;
-
-        // Coordinates calculation to ensure no overlap and extreme position
         switch (position) {
-            case 'left':
-                return { ...baseStyle, left: edgePadding, top: midY - 10 };
-            case 'right':
-                return { ...baseStyle, right: edgePadding, top: midY - 10 };
-            case 'top':
-                return { ...baseStyle, top: edgePadding, left: midX - 30 };
-            case 'bottom':
-                return { ...baseStyle, bottom: edgePadding, left: midX - 30 };
-            case 'topLeft':
-                return { ...baseStyle, top: edgePadding + 10, left: edgePadding };
-            case 'topRight':
-                return { ...baseStyle, top: edgePadding + 10, right: edgePadding };
-            case 'bottomLeft':
-                return { ...baseStyle, bottom: edgePadding + 10, left: edgePadding };
-            case 'bottomRight':
-                return { ...baseStyle, bottom: edgePadding + 10, right: edgePadding };
+            case 'left': return { ...baseStyle, left: edgePadding, top: midY - 10 };
+            case 'right': return { ...baseStyle, right: edgePadding, top: midY - 10 };
+            case 'top': return { ...baseStyle, top: edgePadding, left: midX - 30 };
+            case 'bottom': return { ...baseStyle, bottom: edgePadding, left: midX - 30 };
+            case 'topLeft': return { ...baseStyle, top: edgePadding, left: edgePadding };
+            case 'topRight': return { ...baseStyle, top: edgePadding, right: edgePadding };
+            case 'bottomLeft': return { ...baseStyle, bottom: edgePadding, left: edgePadding };
+            case 'bottomRight': return { ...baseStyle, bottom: edgePadding, right: edgePadding };
         }
     };
 
-    const getPositionMarkerStyle = (position: Position) => {
-        // Markers to help user map the space mentally
-        const baseStyle = {
-            position: 'absolute' as const,
-            width: 4,
-            height: 4,
-            borderRadius: 2,
-            backgroundColor: colors.textMuted,
-            opacity: 0.1, // Very subtle
-        };
-
-        const midX = areaWidth / 2;
-        const midY = areaHeight / 2;
-        const pad = 20;
-
-        switch (position) {
-            case 'left': return { ...baseStyle, left: pad, top: midY - 2 };
-            case 'right': return { ...baseStyle, right: pad, top: midY - 2 };
-            case 'top': return { ...baseStyle, top: pad, left: midX - 2 };
-            case 'bottom': return { ...baseStyle, bottom: pad, left: midX - 2 };
-            case 'topLeft': return { ...baseStyle, top: pad, left: pad };
-            case 'topRight': return { ...baseStyle, top: pad, right: pad };
-            case 'bottomLeft': return { ...baseStyle, bottom: pad, left: pad };
-            case 'bottomRight': return { ...baseStyle, bottom: pad, right: pad };
-        }
-    };
-
+    // Performance message
     const getPerformanceMessage = () => {
         const percentage = (score / totalRounds) * 100;
         if (percentage >= 90) return { emoji: '🏆', text: t('games.peripheral.performance.elite'), color: colors.success };
@@ -324,191 +310,189 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
         return { emoji: '💪', text: t('games.peripheral.performance.challenging'), color: colors.textMuted };
     };
 
-    const allPositions: Position[] = ['left', 'right', 'top', 'bottom', 'topLeft', 'topRight', 'bottomLeft', 'bottomRight'];
+    // Show current word in sequence
+    const currentWord = currentShowingIndex >= 0 ? sequenceWords[currentShowingIndex] : null;
+    const currentPosition = currentShowingIndex >= 0 ? sequencePositions[currentShowingIndex] : null;
+
+    // Shuffle options for answering (all sequence words shuffled)
+    const shuffledOptions = [...sequenceWords].sort(() => Math.random() - 0.5);
 
     return (
         <View style={{ alignItems: 'center', width: '100%' }}>
-            {/* Header - Minimalist */}
+            {/* Header */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md, paddingHorizontal: spacing.md, width: '100%' }}>
                 <Eye size={18} color={colors.primary} strokeWidth={2} />
-                <Text
-                    style={{
-                        fontFamily: fontFamily.uiRegular,
-                        fontSize: fontSize.sm,
-                        color: colors.textMuted,
-                        marginLeft: spacing.sm,
-                        flex: 1,
-                    }}
-                >
-                    {t('games.peripheral.instructions')}
+                <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.sm, color: colors.textMuted, marginLeft: spacing.sm, flex: 1 }}>
+                    {t('games.peripheral.instructionsSequence')}
                 </Text>
             </View>
 
-            {/* Game Area & Controls Container */}
-            <View
-                style={{
-                    width: areaWidth,
-                    height: areaHeight,
-                    backgroundColor: colors.surfaceElevated,
-                    borderRadius: borderRadius.bento,
-                    borderWidth: 1,
-                    borderColor: 'rgba(255,255,255,0.1)',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    overflow: 'hidden', // Contain everything
-                    position: 'relative',
-                }}
-            >
-                {/* 1. Active Game Elements (Only visible when playing/countdown/feedback) */}
-
-                {/* Position Markers (Always visible for structure, but dimmed) - Z:1 */}
-                {allPositions.map((pos) => (
-                    <View key={pos} style={[getPositionMarkerStyle(pos), { zIndex: 1 }]} />
-                ))}
-
-                {/* Central Focus Point - RED TARGET - Z:10 - Only show during active gameplay */}
-                {(gameState === 'countdown' || gameState === 'playing' || gameState === 'feedback') && (
+            {/* Game Area */}
+            <View style={{
+                width: areaWidth,
+                height: areaHeight,
+                backgroundColor: colors.surfaceElevated,
+                borderRadius: borderRadius.bento,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.1)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                overflow: 'hidden',
+                position: 'relative',
+            }}>
+                {/* Central Focus Point - RED TARGET */}
+                {(gameState === 'countdown' || gameState === 'showing' || gameState === 'answering' || gameState === 'feedback') && (
                     <Animated.View style={[focusPulseStyle, { zIndex: 10 }]}>
-                        <View
-                            style={{
-                                width: 50,
-                                height: 50,
-                                borderRadius: 25,
-                                backgroundColor: colors.surface,
-                                borderWidth: 3,
-                                borderColor: '#FF4444', // Red for strong fixation
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                shadowColor: '#FF4444',
-                                shadowOffset: { width: 0, height: 0 },
-                                shadowOpacity: 0.6,
-                                shadowRadius: 15,
-                                elevation: 8,
-                            }}
-                        >
+                        <View style={{
+                            width: 50,
+                            height: 50,
+                            borderRadius: 25,
+                            backgroundColor: colors.surface,
+                            borderWidth: 3,
+                            borderColor: '#FF4444',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            shadowColor: '#FF4444',
+                            shadowOffset: { width: 0, height: 0 },
+                            shadowOpacity: 0.6,
+                            shadowRadius: 15,
+                            elevation: 8,
+                        }}>
                             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF4444' }} />
                         </View>
                     </Animated.View>
                 )}
 
-                {/* Focus Ring Animation - Z:11 */}
-                {(gameState === 'playing' || waitingForInput) && (
-                    <Animated.View
-                        style={[
-                            {
-                                position: 'absolute',
-                                width: 75,
-                                height: 75,
-                                borderRadius: 37.5,
-                                borderWidth: 1,
-                                borderColor: '#FF4444',
-                                opacity: 0.5,
-                                zIndex: 11,
-                            },
-                            focusRingStyle,
-                        ]}
-                    />
+                {/* Focus Ring */}
+                {(gameState === 'showing' || gameState === 'answering') && (
+                    <Animated.View style={[{
+                        position: 'absolute',
+                        width: 75,
+                        height: 75,
+                        borderRadius: 37.5,
+                        borderWidth: 1,
+                        borderColor: '#FF4444',
+                        zIndex: 11,
+                    }, focusRingStyle]} />
                 )}
 
-                {/* Peripheral Word - Z:15 */}
-                {currentWord && (
+                {/* Word Display */}
+                {currentWord && currentPosition && (
                     <Animated.Text
-                        entering={FadeIn.duration(100)}
+                        entering={FadeIn.duration(80)}
                         exiting={FadeOut.duration(80)}
-                        style={[getWordStyle(wordPosition), { zIndex: 15 }]}
+                        style={[getWordStyle(currentPosition), { zIndex: 15 }]}
                     >
                         {currentWord}
                     </Animated.Text>
                 )}
 
-                {/* Feedback Indicator - Z:20 */}
+                {/* Sequence Progress Indicator */}
+                {gameState === 'showing' && (
+                    <View style={{ position: 'absolute', bottom: spacing.md, flexDirection: 'row', gap: 6, zIndex: 20 }}>
+                        {sequenceWords.map((_, idx) => (
+                            <View
+                                key={idx}
+                                style={{
+                                    width: 10,
+                                    height: 10,
+                                    borderRadius: 5,
+                                    backgroundColor: idx <= currentShowingIndex ? colors.primary : colors.textDim,
+                                }}
+                            />
+                        ))}
+                    </View>
+                )}
+
+                {/* Answer Progress */}
+                {gameState === 'answering' && (
+                    <View style={{ position: 'absolute', bottom: spacing.md, flexDirection: 'row', gap: 8, zIndex: 20 }}>
+                        {sequenceWords.map((_, idx) => (
+                            <View
+                                key={idx}
+                                style={{
+                                    minWidth: 60,
+                                    paddingHorizontal: spacing.sm,
+                                    paddingVertical: spacing.xs,
+                                    borderRadius: borderRadius.sm,
+                                    backgroundColor: userAnswers[idx] ? colors.primaryGlow : colors.surfaceOverlay,
+                                    borderWidth: 1,
+                                    borderColor: userAnswers[idx] ? colors.primary : colors.glassBorder,
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.sm, color: userAnswers[idx] ? colors.primary : colors.textDim }}>
+                                    {userAnswers[idx] || `${idx + 1}.`}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                )}
+
+                {/* Feedback */}
                 {showFeedback && (
-                    <View
-                        style={{
-                            position: 'absolute',
-                            top: spacing.md,
-                            right: spacing.md,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            backgroundColor: showFeedback === 'correct' ? colors.success + '25' : colors.error + '25',
-                            paddingHorizontal: spacing.sm,
-                            paddingVertical: spacing.xs,
-                            borderRadius: borderRadius.md,
-                            zIndex: 20,
-                        }}
-                    >
+                    <View style={{
+                        position: 'absolute',
+                        top: spacing.md,
+                        right: spacing.md,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: showFeedback === 'correct' ? colors.success + '25' : colors.error + '25',
+                        paddingHorizontal: spacing.sm,
+                        paddingVertical: spacing.xs,
+                        borderRadius: borderRadius.md,
+                        zIndex: 20,
+                    }}>
                         {showFeedback === 'correct' ? (
                             <>
                                 <CheckCircle size={18} color={colors.success} />
-                                <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.sm, color: colors.success, marginLeft: spacing.xs }}>
-                                    ✓
-                                </Text>
+                                <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.sm, color: colors.success, marginLeft: spacing.xs }}>✓</Text>
                             </>
                         ) : (
                             <>
                                 <XCircle size={18} color={colors.error} />
                                 <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.xs, color: colors.error, marginLeft: spacing.xs }}>
-                                    {correctWordRef.current}
+                                    {sequenceWords.join(' → ')}
                                 </Text>
                             </>
                         )}
                     </View>
                 )}
 
-                {/* Countdown Overlay */}
+                {/* Countdown */}
                 {gameState === 'countdown' && (
-                    <View
-                        style={{
-                            position: 'absolute',
-                            zIndex: 30,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backgroundColor: 'rgba(0,0,0,0.85)',
-                            width: '100%',
-                            height: '100%',
-                        }}
-                    >
-                        <Text
-                            style={{
-                                fontFamily: fontFamily.uiBold,
-                                fontSize: 80,
-                                color: colors.primary,
-                                ...glows.primary,
-                            }}
-                        >
+                    <View style={{
+                        position: 'absolute',
+                        zIndex: 30,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'rgba(0,0,0,0.85)',
+                        width: '100%',
+                        height: '100%',
+                    }}>
+                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: 80, color: colors.primary, ...glows.primary }}>
                             {countdown || 'GO!'}
                         </Text>
-                        <Text
-                            style={{
-                                fontFamily: fontFamily.uiMedium,
-                                fontSize: fontSize.md,
-                                color: colors.text,
-                                marginTop: spacing.sm,
-                            }}
-                        >
+                        <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.md, color: colors.text, marginTop: spacing.sm }}>
                             {t('games.peripheral.eyesLocked')}
                         </Text>
                     </View>
                 )}
 
-
-                {/* 2. Menu / Controls Overlay (Visible when ready or complete) */}
+                {/* Ready / Complete Overlay */}
                 {(gameState === 'ready' || gameState === 'complete') && (
-                    <View
-                        style={{
-                            position: 'absolute',
-                            width: '100%',
-                            height: '100%',
-                            backgroundColor: colors.surface + 'F5', // More opaque to hide background elements
-                            zIndex: 40,
-                            justifyContent: 'space-between', // Use space-between for better vertical distribution
-                            alignItems: 'center',
-                            paddingVertical: spacing.xl,
-                            paddingHorizontal: spacing.lg,
-                        }}
-                    >
+                    <View style={{
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: colors.surface + 'F5',
+                        zIndex: 40,
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        paddingVertical: spacing.xl,
+                        paddingHorizontal: spacing.lg,
+                    }}>
                         {gameState === 'complete' ? (
-                            // Completed State
                             <View style={{ alignItems: 'center', width: '100%', flex: 1, justifyContent: 'center' }}>
                                 <Text style={{ fontFamily: fontFamily.uiBold, fontSize: 48, color: getPerformanceMessage().color, marginBottom: spacing.xs }}>
                                     {getPerformanceMessage().emoji}
@@ -519,25 +503,24 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
                                 <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.md, color: colors.textMuted, marginBottom: spacing.lg, textAlign: 'center' }}>
                                     {getPerformanceMessage().text}
                                 </Text>
-
                                 <Pressable
                                     onPress={handleStart}
                                     style={({ pressed }) => ({
                                         width: '90%',
                                         maxWidth: 280,
                                         paddingVertical: spacing.lg,
-                                        backgroundColor: pressed ? '#1a8f3a' : '#22c55e', // Vibrant green
+                                        backgroundColor: pressed ? colors.success : colors.success,
                                         borderRadius: borderRadius.lg,
                                         flexDirection: 'row',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         marginTop: spacing.lg,
-                                        shadowColor: '#22c55e',
+                                        shadowColor: colors.success,
                                         shadowOffset: { width: 0, height: 6 },
                                         shadowOpacity: 0.5,
                                         shadowRadius: 14,
                                         elevation: 10,
-                                        transform: [{ scale: pressed ? 0.97 : 1 }],
+                                        opacity: pressed ? 0.85 : 1,
                                     })}
                                 >
                                     <RotateCcw size={24} color="#fff" strokeWidth={2.5} />
@@ -547,22 +530,13 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
                                 </Pressable>
                             </View>
                         ) : (
-                            // Ready State - Redesigned layout
                             <>
-                                {/* Top section - Title and Difficulty Selector */}
+                                {/* Difficulty Selector */}
                                 <View style={{ alignItems: 'center', width: '100%' }}>
                                     <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.sm, color: colors.textMuted, marginBottom: spacing.md }}>
                                         {t('games.peripheral.selectDifficulty')}
                                     </Text>
-                                    <View
-                                        style={{
-                                            flexDirection: 'row',
-                                            flexWrap: 'wrap',
-                                            justifyContent: 'center',
-                                            gap: spacing.sm,
-                                            width: '100%',
-                                        }}
-                                    >
+                                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm, width: '100%' }}>
                                         {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map((level) => (
                                             <Pressable
                                                 key={level}
@@ -576,13 +550,11 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
                                                     borderColor: difficulty === level ? colors.primary : colors.glassBorder,
                                                 }}
                                             >
-                                                <Text
-                                                    style={{
-                                                        fontFamily: fontFamily.uiMedium,
-                                                        fontSize: fontSize.sm,
-                                                        color: difficulty === level ? colors.background : colors.textMuted,
-                                                    }}
-                                                >
+                                                <Text style={{
+                                                    fontFamily: fontFamily.uiMedium,
+                                                    fontSize: fontSize.sm,
+                                                    color: difficulty === level ? colors.background : colors.textMuted,
+                                                }}>
                                                     {t(`games.peripheral.difficulty.${level}`)}
                                                 </Text>
                                             </Pressable>
@@ -590,7 +562,7 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
                                     </View>
                                 </View>
 
-                                {/* Middle section - Game Info (centered) */}
+                                {/* Game Info */}
                                 <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
                                     <View style={{
                                         backgroundColor: colors.surfaceElevated,
@@ -601,16 +573,16 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
                                         borderColor: colors.glassBorder,
                                         alignItems: 'center',
                                     }}>
-                                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: 36, color: colors.primary }}>
-                                            {DIFFICULTY_CONFIG[difficulty].description}
+                                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: 24, color: colors.primary }}>
+                                            {config.description}
                                         </Text>
                                         <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.md, color: colors.textMuted, marginTop: spacing.xs }}>
-                                            {DIFFICULTY_CONFIG[difficulty].rounds} {t('games.common.round').toLowerCase()}s
+                                            {config.rounds} {t('games.common.round').toLowerCase()}
                                         </Text>
                                     </View>
                                 </View>
 
-                                {/* Bottom section - Start Button */}
+                                {/* Start Button */}
                                 <View style={{ alignItems: 'center', width: '100%' }}>
                                     <Pressable
                                         onPress={handleStart}
@@ -618,17 +590,17 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
                                             width: '100%',
                                             maxWidth: 280,
                                             paddingVertical: spacing.lg,
-                                            backgroundColor: pressed ? '#1a8f3a' : '#22c55e', // Vibrant green
+                                            backgroundColor: colors.success,
                                             borderRadius: borderRadius.lg,
                                             flexDirection: 'row',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            shadowColor: '#22c55e',
+                                            shadowColor: colors.success,
                                             shadowOffset: { width: 0, height: 6 },
                                             shadowOpacity: 0.5,
                                             shadowRadius: 14,
                                             elevation: 10,
-                                            transform: [{ scale: pressed ? 0.97 : 1 }],
+                                            opacity: pressed ? 0.85 : 1,
                                         })}
                                     >
                                         <Play size={28} color="#fff" fill="#fff" />
@@ -643,15 +615,55 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
                 )}
             </View>
 
-            {/* Answer Options Overlay - Cyber HUD style (Kept same logic, just checked it overlays correctly) */}
-            <HUDOverlay
-                visible={waitingForInput && options.length > 0}
-                options={options}
-                onSelect={(word) => handleOptionPress(word)}
-            />
+            {/* Answer Options HUD */}
+            {gameState === 'answering' && (
+                <View style={{
+                    marginTop: spacing.lg,
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                    gap: spacing.md,
+                    paddingHorizontal: spacing.md,
+                }}>
+                    {shuffledOptions.map((word, idx) => {
+                        const isSelected = userAnswers.includes(word);
+                        return (
+                            <Pressable
+                                key={idx}
+                                onPress={() => !isSelected && handleAnswerPress(word)}
+                                disabled={isSelected}
+                            >
+                                {({ pressed }) => (
+                                    <View style={{
+                                        minWidth: 100,
+                                        paddingHorizontal: spacing.lg,
+                                        paddingVertical: spacing.md,
+                                        backgroundColor: isSelected ? colors.textDim : (pressed ? colors.primaryDim : colors.surfaceElevated),
+                                        borderRadius: borderRadius.md,
+                                        borderWidth: 2,
+                                        borderColor: isSelected ? colors.textDim : (pressed ? colors.primary : colors.glassBorder),
+                                        alignItems: 'center',
+                                        opacity: isSelected ? 0.4 : 1,
+                                    }}>
+                                        <Text style={{
+                                            fontFamily: fontFamily.uiBold,
+                                            fontSize: fontSize.lg,
+                                            color: isSelected ? colors.textMuted : (pressed ? colors.primary : colors.text),
+                                            textTransform: 'uppercase',
+                                            letterSpacing: 1,
+                                        }}>
+                                            {word}
+                                        </Text>
+                                    </View>
+                                )}
+                            </Pressable>
+                        );
+                    })}
+                </View>
+            )}
 
-            {/* Stats Footer - Z:50 to ensure it's above other elements */}
-            {(gameState === 'playing' || gameState === 'feedback') && (
+            {/* Stats Footer */}
+            {(gameState === 'showing' || gameState === 'answering' || gameState === 'feedback') && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.lg, gap: spacing.lg, zIndex: 50, position: 'relative' }}>
                     <View style={{ alignItems: 'center' }}>
                         <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted }}>{t('games.common.round')}</Text>
@@ -664,15 +676,13 @@ export const PeripheralCatch: React.FC<PeripheralCatchProps> = ({ onComplete }) 
                         <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.lg, color: colors.success }}>{score}</Text>
                     </View>
                     {streak > 1 && (
-                        <View
-                            style={{
-                                alignItems: 'center',
-                                backgroundColor: colors.primaryGlow,
-                                paddingHorizontal: spacing.sm,
-                                paddingVertical: spacing.xs,
-                                borderRadius: borderRadius.md,
-                            }}
-                        >
+                        <View style={{
+                            alignItems: 'center',
+                            backgroundColor: colors.primaryGlow,
+                            paddingHorizontal: spacing.sm,
+                            paddingVertical: spacing.xs,
+                            borderRadius: borderRadius.md,
+                        }}>
                             <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.sm, color: colors.primary }}>
                                 🔥 {streak}
                             </Text>

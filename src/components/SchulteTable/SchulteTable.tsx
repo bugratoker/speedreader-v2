@@ -276,22 +276,24 @@ export const SchulteTable: React.FC<SchulteTableProps> = ({ onComplete }) => {
 
         for (let i = 0; i < totalCells; i++) {
             if (i === centerIndex) {
-                grid.push(<RedDotCell key="center" cellSize={cellSize} />);
+                grid.push(<RedDotCell key={`cell-center-${i}`} cellSize={cellSize} />);
             } else {
                 const num = numbers[numIndex];
-                grid.push(
-                    <View key={num} style={{ width: cellSize, height: cellSize }}>
-                        <NumberCell
-                            number={num}
-                            isNext={num === currentTarget || (gameState === 'ready' && num === 1)}
-                            isCompleted={num < currentTarget && gameState !== 'ready'}
-                            isWrong={num === wrongCell}
-                            cellSize={cellSize}
-                            onPress={() => handleCellPress(num)}
-                            disabled={false}
-                        />
-                    </View>
-                );
+                if (num !== undefined) {
+                    grid.push(
+                        <View key={`cell-${i}-${num}`} style={{ width: cellSize, height: cellSize }}>
+                            <NumberCell
+                                number={num}
+                                isNext={num === currentTarget || (gameState === 'ready' && num === 1)}
+                                isCompleted={num < currentTarget && gameState !== 'ready'}
+                                isWrong={num === wrongCell}
+                                cellSize={cellSize}
+                                onPress={() => handleCellPress(num)}
+                                disabled={false}
+                            />
+                        </View>
+                    );
+                }
                 numIndex++;
             }
         }

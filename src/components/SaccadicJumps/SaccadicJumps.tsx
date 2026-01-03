@@ -1,13 +1,15 @@
 /**
- * Saccadic Jumps - Precision Eye Movement Training
- * Two points on screen that alternate, training rapid saccadic eye movements.
+ * Saccadic Jumps - Interactive Eye Movement Training
+ * 
+ * Gamified training that requires users to actively tap targets,
+ * training precise saccadic eye movements with immediate feedback.
  * 
  * Academic Basis: Trains "Return Sweeps" (moving from the end of one line to
  * the start of the next) and minimizes "Regressions" (involuntary backtracking).
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, Pressable, Dimensions } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { View, Text, Pressable, Dimensions, Vibration } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Animated, {
     useSharedValue,
@@ -19,80 +21,246 @@ import Animated, {
     Easing,
 } from 'react-native-reanimated';
 import { useTheme } from '../../theme';
-import { Play, Pause, RotateCcw, Zap, ArrowLeftRight, ArrowUpDown } from 'lucide-react-native';
+import {
+    Play, RotateCcw, Zap, Target,
+    ArrowRight, ArrowDown, Shuffle, Crosshair
+} from 'lucide-react-native';
 import { InfoButton } from '../InfoButton';
 import { AcademicModal } from '../AcademicModal';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface SaccadicJumpsProps {
     onComplete?: (totalJumps: number, accuracy: number) => void;
 }
 
-type SpeedLevel = 'slow' | 'medium' | 'fast';
-type Direction = 'horizontal' | 'vertical';
+type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+type PatternType = 'lineScan' | 'returnSweep' | 'diagonal' | 'random';
+type GameState = 'idle' | 'countdown' | 'playing' | 'completed';
 
-const SPEED_CONFIG: Record<SpeedLevel, { interval: number; label: string }> = {
-    slow: { interval: 1200, label: 'Slow' },
-    medium: { interval: 800, label: 'Medium' },
-    fast: { interval: 500, label: 'Fast' },
+interface DifficultyConfig {
+    targetDuration: number;
+    dotCount: number;
+    rounds: number;
+    label: string;
+    description: string;
+}
+
+const DIFFICULTY_CONFIG: Record<DifficultyLevel, DifficultyConfig> = {
+    beginner: { targetDuration: 1500, dotCount: 2, rounds: 12, label: 'Beginner', description: '1.5s • 2 targets' },
+    intermediate: { targetDuration: 1000, dotCount: 3, rounds: 15, label: 'Intermediate', description: '1s • 3 targets' },
+    advanced: { targetDuration: 700, dotCount: 4, rounds: 18, label: 'Advanced', description: '0.7s • 4 targets' },
+    expert: { targetDuration: 500, dotCount: 5, rounds: 24, label: 'Expert', description: '0.5s • 5 targets' },
 };
 
-const TOTAL_JUMPS = 24;
+// Target positions for different patterns
+const getTargetPositions = (count: number, areaWidth: number, areaHeight: number) => {
+    const padding = 40;
+    const positions: { x: number; y: number }[] = [];
+
+    if (count === 2) {
+        positions.push({ x: padding, y: areaHeight / 2 });
+        positions.push({ x: areaWidth - padding, y: areaHeight / 2 });
+    } else if (count === 3) {
+        positions.push({ x: padding, y: areaHeight / 2 });
+        positions.push({ x: areaWidth / 2, y: padding });
+        positions.push({ x: areaWidth - padding, y: areaHeight / 2 });
+    } else if (count === 4) {
+        positions.push({ x: padding, y: padding });
+        positions.push({ x: areaWidth - padding, y: padding });
+        positions.push({ x: areaWidth - padding, y: areaHeight - padding });
+        positions.push({ x: padding, y: areaHeight - padding });
+    } else {
+        const centerX = areaWidth / 2;
+        const centerY = areaHeight / 2;
+        const radius = Math.min(areaWidth, areaHeight) / 2 - padding;
+        for (let i = 0; i < count; i++) {
+            const angle = (i * 2 * Math.PI / count) - Math.PI / 2;
+            positions.push({
+                x: centerX + radius * Math.cos(angle),
+                y: centerY + radius * Math.sin(angle),
+            });
+        }
+    }
+
+    return positions;
+};
+
+const getNextTargetIndex = (
+    current: number,
+    pattern: PatternType,
+    dotCount: number
+): number => {
+    switch (pattern) {
+        case 'lineScan':
+            return (current + 1) % dotCount;
+        case 'returnSweep':
+            return (current + 1) % dotCount;
+        case 'diagonal':
+            return (current + 2) % dotCount;
+        case 'random':
+        default:
+            let next;
+            do {
+                next = Math.floor(Math.random() * dotCount);
+            } while (next === current && dotCount > 1);
+            return next;
+    }
+};
+
+// Single target component with its own animations
+const TargetDot: React.FC<{
+    index: number;
+    position: { x: number; y: number };
+    isActive: boolean;
+    isPlaying: boolean;
+    dotSize: number;
+    onTap: (index: number) => void;
+    colors: any;
+}> = ({ index, position, isActive, isPlaying, dotSize, onTap, colors }) => {
+    const scale = useSharedValue(0.8);
+    const glow = useSharedValue(0);
+    const pulse = useSharedValue(1);
+
+    useEffect(() => {
+        if (isActive && isPlaying) {
+            scale.value = withSpring(1.2, { damping: 8 });
+            glow.value = withTiming(1, { duration: 150 });
+            pulse.value = withRepeat(
+                withSequence(
+                    withTiming(1.15, { duration: 400, easing: Easing.inOut(Easing.ease) }),
+                    withTiming(1, { duration: 400, easing: Easing.inOut(Easing.ease) })
+                ),
+                -1,
+                true
+            );
+        } else {
+            scale.value = withSpring(0.8, { damping: 12 });
+            glow.value = withTiming(0, { duration: 100 });
+            pulse.value = 1;
+        }
+    }, [isActive, isPlaying]);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: scale.value }],
+    }));
+
+    const glowStyle = useAnimatedStyle(() => ({
+        opacity: glow.value,
+    }));
+
+    const pulseStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: pulse.value }],
+    }));
+
+    return (
+        <Pressable
+            onPress={() => onTap(index)}
+            style={{
+                position: 'absolute',
+                left: position.x - dotSize / 2,
+                top: position.y - dotSize / 2,
+            }}
+        >
+            {/* Outer glow ring */}
+            <Animated.View
+                style={[
+                    {
+                        position: 'absolute',
+                        width: dotSize + 24,
+                        height: dotSize + 24,
+                        left: -12,
+                        top: -12,
+                        borderRadius: (dotSize + 24) / 2,
+                        backgroundColor: colors.secondaryGlow,
+                    },
+                    glowStyle,
+                ]}
+            />
+
+            {/* Pulsing ring for active */}
+            {isActive && isPlaying && (
+                <Animated.View
+                    style={[
+                        {
+                            position: 'absolute',
+                            width: dotSize + 16,
+                            height: dotSize + 16,
+                            left: -8,
+                            top: -8,
+                            borderRadius: (dotSize + 16) / 2,
+                            borderWidth: 2,
+                            borderColor: colors.secondary,
+                        },
+                        pulseStyle,
+                    ]}
+                />
+            )}
+
+            {/* Target dot */}
+            <Animated.View
+                style={[
+                    {
+                        width: dotSize,
+                        height: dotSize,
+                        borderRadius: dotSize / 2,
+                        backgroundColor: isActive && isPlaying ? colors.secondary : colors.surface,
+                        borderWidth: 2,
+                        borderColor: isActive && isPlaying ? colors.secondary : colors.glassBorder,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    },
+                    animatedStyle,
+                ]}
+            >
+                <Target
+                    size={24}
+                    color={isActive && isPlaying ? colors.white : colors.textMuted}
+                    strokeWidth={2}
+                />
+            </Animated.View>
+        </Pressable>
+    );
+};
 
 export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
     const { t } = useTranslation();
     const { colors, spacing, fontFamily, fontSize, borderRadius, glows } = useTheme();
 
-    const [isRunning, setIsRunning] = useState(false);
-    const [currentSide, setCurrentSide] = useState<'first' | 'second'>('first');
-    const [jumpCount, setJumpCount] = useState(0);
-    const [speed, setSpeed] = useState<SpeedLevel>('medium');
-    const [direction, setDirection] = useState<Direction>('horizontal');
-    const [isComplete, setIsComplete] = useState(false);
+    // Game state
+    const [gameState, setGameState] = useState<GameState>('idle');
+    const [difficulty, setDifficulty] = useState<DifficultyLevel>('beginner');
+    const [pattern, setPattern] = useState<PatternType>('random');
     const [countdown, setCountdown] = useState<number | null>(null);
     const [showAcademicModal, setShowAcademicModal] = useState(false);
 
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    // Active target tracking
+    const [activeTarget, setActiveTarget] = useState<number>(0);
+    const [round, setRound] = useState(0);
+
+    // Performance metrics
+    const [hits, setHits] = useState(0);
+    const [misses, setMisses] = useState(0);
+    const [reactionTimes, setReactionTimes] = useState<number[]>([]);
+    const [streak, setStreak] = useState(0);
+    const [bestStreak, setBestStreak] = useState(0);
+
+    // Timing refs
+    const targetActivationTime = useRef<number>(0);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Animation values
-    const firstScale = useSharedValue(1.2);
-    const secondScale = useSharedValue(0.8);
-    const firstGlow = useSharedValue(1);
-    const secondGlow = useSharedValue(0.2);
-    const rhythmRing = useSharedValue(1);
-    const rhythmOpacity = useSharedValue(0);
+    const missShake = useSharedValue(0);
 
-    const animateToSide = useCallback((side: 'first' | 'second') => {
-        const isFirst = side === 'first';
-        firstScale.value = withSpring(isFirst ? 1.3 : 0.7, { damping: 10 });
-        secondScale.value = withSpring(isFirst ? 0.7 : 1.3, { damping: 10 });
-        firstGlow.value = withTiming(isFirst ? 1 : 0.15, { duration: 100 });
-        secondGlow.value = withTiming(isFirst ? 0.15 : 1, { duration: 100 });
+    const config = DIFFICULTY_CONFIG[difficulty];
+    const areaWidth = SCREEN_WIDTH - spacing.md * 4;
+    const areaHeight = 260;
+    const dotSize = 56;
 
-        // Rhythm ring pulse on active dot
-        rhythmRing.value = 1;
-        rhythmOpacity.value = 1;
-        rhythmRing.value = withTiming(1.8, { duration: SPEED_CONFIG[speed].interval * 0.8 });
-        rhythmOpacity.value = withTiming(0, { duration: SPEED_CONFIG[speed].interval * 0.8 });
-    }, [firstScale, secondScale, firstGlow, secondGlow, rhythmRing, rhythmOpacity, speed]);
-
-    const handleJump = useCallback(() => {
-        setCurrentSide((prev) => {
-            const next = prev === 'first' ? 'second' : 'first';
-            animateToSide(next);
-            return next;
-        });
-        setJumpCount((prev) => {
-            const newCount = prev + 1;
-            if (newCount >= TOTAL_JUMPS) {
-                setIsRunning(false);
-                setIsComplete(true);
-                onComplete?.(newCount, 100);
-            }
-            return newCount;
-        });
-    }, [animateToSide, onComplete]);
+    const positions = useMemo(() =>
+        getTargetPositions(config.dotCount, areaWidth, areaHeight),
+        [config.dotCount, areaWidth, areaHeight]
+    );
 
     // Countdown effect
     useEffect(() => {
@@ -101,77 +269,145 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
             return () => clearTimeout(timer);
         } else if (countdown === 0) {
             setCountdown(null);
-            setIsRunning(true);
-            animateToSide('first');
+            setGameState('playing');
+            activateTarget(0);
         }
-    }, [countdown, animateToSide]);
+    }, [countdown]);
 
-    useEffect(() => {
-        if (isRunning && !isComplete) {
-            intervalRef.current = setInterval(handleJump, SPEED_CONFIG[speed].interval);
+    const activateTarget = useCallback((index: number) => {
+        setActiveTarget(index);
+        targetActivationTime.current = Date.now();
+
+        // Set timeout for miss
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+            handleMiss();
+        }, config.targetDuration);
+    }, [config.targetDuration]);
+
+    const advanceRound = useCallback(() => {
+        const newRound = round + 1;
+        setRound(newRound);
+
+        if (newRound >= config.rounds) {
+            // Game complete
+            setGameState('completed');
+            const totalAttempts = hits + misses + 1;
+            const accuracy = ((hits + 1) / totalAttempts) * 100;
+            onComplete?.(newRound, accuracy);
+        } else {
+            // Next target
+            const nextTarget = getNextTargetIndex(activeTarget, pattern, config.dotCount);
+
+            // Small delay before next target
+            setTimeout(() => {
+                activateTarget(nextTarget);
+            }, 200);
         }
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
-        };
-    }, [isRunning, speed, handleJump, isComplete]);
+    }, [round, config.rounds, config.dotCount, hits, misses, activeTarget, pattern, activateTarget]);
+
+    const handleMiss = useCallback(() => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+        setMisses(prev => prev + 1);
+        setStreak(0);
+
+        // Shake animation
+        missShake.value = withSequence(
+            withTiming(-5, { duration: 50 }),
+            withTiming(5, { duration: 50 }),
+            withTiming(-5, { duration: 50 }),
+            withTiming(5, { duration: 50 }),
+            withTiming(0, { duration: 50 })
+        );
+
+        // Haptic feedback for miss
+        Vibration.vibrate([0, 50, 30, 50]);
+
+        advanceRound();
+    }, [advanceRound, missShake]);
+
+    const handleTargetTap = useCallback((index: number) => {
+        if (gameState !== 'playing') return;
+
+        if (index === activeTarget) {
+            // HIT!
+            const reactionTime = Date.now() - targetActivationTime.current;
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+            // Record stats
+            setHits(prev => prev + 1);
+            setReactionTimes(prev => [...prev, reactionTime]);
+            setStreak(prev => {
+                const newStreak = prev + 1;
+                if (newStreak > bestStreak) setBestStreak(newStreak);
+                return newStreak;
+            });
+
+            // Haptic feedback
+            Vibration.vibrate(30);
+
+            advanceRound();
+        } else {
+            // Wrong target - penalize
+            handleMiss();
+        }
+    }, [gameState, activeTarget, bestStreak, advanceRound, handleMiss]);
 
     const handleStart = () => {
-        if (isComplete) {
-            handleReset();
-        }
+        resetGame();
         setCountdown(3);
     };
 
-    const handlePause = () => {
-        setIsRunning(false);
+    const resetGame = () => {
+        setGameState('idle');
+        setRound(0);
+        setHits(0);
+        setMisses(0);
+        setReactionTimes([]);
+        setStreak(0);
+        setActiveTarget(0);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
 
-    const handleReset = () => {
-        setIsRunning(false);
-        setCurrentSide('first');
-        setJumpCount(0);
-        setIsComplete(false);
-        setCountdown(null);
-        firstScale.value = 1.2;
-        secondScale.value = 0.8;
-        firstGlow.value = 1;
-        secondGlow.value = 0.2;
+    // Calculate performance stats
+    const accuracy = hits + misses > 0 ? Math.round((hits / (hits + misses)) * 100) : 0;
+    const avgReactionTime = reactionTimes.length > 0
+        ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length)
+        : 0;
+    const progressPercentage = (round / config.rounds) * 100;
+
+    // Get star rating based on accuracy and reaction time
+    const getStarRating = () => {
+        const finalAccuracy = hits + misses > 0 ? (hits / (hits + misses)) * 100 : 0;
+        if (finalAccuracy >= 90 && avgReactionTime < 500) return 3;
+        if (finalAccuracy >= 75 && avgReactionTime < 700) return 2;
+        if (finalAccuracy >= 50) return 1;
+        return 0;
     };
 
-    const firstAnimatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: firstScale.value }],
+    const missShakeStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: missShake.value }],
     }));
 
-    const secondAnimatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: secondScale.value }],
-    }));
-
-    const firstGlowStyle = useAnimatedStyle(() => ({
-        opacity: firstGlow.value,
-    }));
-
-    const secondGlowStyle = useAnimatedStyle(() => ({
-        opacity: secondGlow.value,
-    }));
-
-    const firstRhythmStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: currentSide === 'first' ? rhythmRing.value : 1 }],
-        opacity: currentSide === 'first' ? rhythmOpacity.value : 0,
-    }));
-
-    const secondRhythmStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: currentSide === 'second' ? rhythmRing.value : 1 }],
-        opacity: currentSide === 'second' ? rhythmOpacity.value : 0,
-    }));
-
-    const dotSize = 44;
-    const areaWidth = SCREEN_WIDTH - spacing.md * 4;
-    const areaHeight = direction === 'horizontal' ? 180 : 280;
-    const dotSpacing = direction === 'horizontal' ? areaWidth * 0.32 : areaHeight * 0.32;
-
-    const progressPercentage = (jumpCount / TOTAL_JUMPS) * 100;
+    const patternConfigs = {
+        lineScan: {
+            icon: <ArrowRight size={14} color={pattern === 'lineScan' ? colors.white : colors.textMuted} />,
+            label: t('games.saccadic.patterns.lineScan') || 'Line',
+        },
+        returnSweep: {
+            icon: <ArrowRight size={14} color={pattern === 'returnSweep' ? colors.white : colors.textMuted} style={{ transform: [{ scaleX: -1 }] }} />,
+            label: t('games.saccadic.patterns.returnSweep') || 'Sweep',
+        },
+        diagonal: {
+            icon: <ArrowDown size={14} color={pattern === 'diagonal' ? colors.white : colors.textMuted} style={{ transform: [{ rotate: '-45deg' }] }} />,
+            label: t('games.saccadic.patterns.diagonal') || 'Diag',
+        },
+        random: {
+            icon: <Shuffle size={14} color={pattern === 'random' ? colors.white : colors.textMuted} />,
+            label: t('games.saccadic.patterns.random') || 'Random',
+        },
+    };
 
     return (
         <View style={{ alignItems: 'center' }}>
@@ -188,98 +424,88 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                         flex: 1,
                     }}
                 >
-                    {t('games.saccadic.instructions')}
+                    {t('games.saccadic.tapInstructions') || 'Tap targets as they light up!'}
                 </Text>
                 <InfoButton onPress={() => setShowAcademicModal(true)} size={24} />
             </View>
 
             {/* Progress Bar */}
-            <View
-                style={{
-                    width: areaWidth,
-                    height: 6,
-                    backgroundColor: colors.surface,
-                    borderRadius: 3,
-                    marginBottom: spacing.md,
-                    overflow: 'hidden',
-                }}
-            >
+            {gameState === 'playing' && (
                 <View
                     style={{
-                        width: `${progressPercentage}%`,
-                        height: '100%',
-                        backgroundColor: colors.secondary,
-                        borderRadius: 3,
-                    }}
-                />
-            </View>
-
-            {/* Progress Stats */}
-            <View
-                style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginBottom: spacing.lg,
-                    gap: spacing.lg,
-                }}
-            >
-                <View style={{ alignItems: 'center' }}>
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiBold,
-                            fontSize: fontSize.xl,
-                            color: colors.secondary,
-                        }}
-                    >
-                        {jumpCount}
-                    </Text>
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiRegular,
-                            fontSize: fontSize.xs,
-                            color: colors.textMuted,
-                        }}
-                    >
-                        / {TOTAL_JUMPS} {t('games.common.jumps')}
-                    </Text>
-                </View>
-
-                <View
-                    style={{
+                        width: areaWidth,
+                        height: 6,
                         backgroundColor: colors.surface,
-                        paddingHorizontal: spacing.md,
-                        paddingVertical: spacing.sm,
-                        borderRadius: borderRadius.md,
-                        borderWidth: 1,
-                        borderColor: colors.secondary,
+                        borderRadius: 3,
+                        marginBottom: spacing.md,
+                        overflow: 'hidden',
                     }}
                 >
-                    <Text
+                    <View
                         style={{
-                            fontFamily: fontFamily.uiMedium,
-                            fontSize: fontSize.sm,
-                            color: colors.secondary,
+                            width: `${progressPercentage}%`,
+                            height: '100%',
+                            backgroundColor: colors.secondary,
+                            borderRadius: 3,
                         }}
-                    >
-                        {SPEED_CONFIG[speed].interval}ms {t('games.saccadic.interval')}
-                    </Text>
+                    />
                 </View>
-            </View>
+            )}
 
-            {/* Dots Area */}
-            <View
-                style={{
-                    width: areaWidth,
-                    height: areaHeight,
-                    backgroundColor: colors.surfaceElevated,
-                    borderRadius: borderRadius.bento,
-                    borderWidth: 1,
-                    borderColor: colors.glassBorder,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    flexDirection: direction === 'horizontal' ? 'row' : 'column',
-                    ...glows.secondarySubtle,
-                }}
+            {/* Live Stats - Only during gameplay */}
+            {gameState === 'playing' && (
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginBottom: spacing.md,
+                        gap: spacing.lg,
+                    }}
+                >
+                    <View style={{ alignItems: 'center' }}>
+                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.lg, color: colors.secondary }}>
+                            {round}/{config.rounds}
+                        </Text>
+                        <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted }}>
+                            {t('games.common.round')}
+                        </Text>
+                    </View>
+
+                    <View style={{ alignItems: 'center' }}>
+                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.lg, color: streak > 0 ? colors.success : colors.text }}>
+                            {streak}🔥
+                        </Text>
+                        <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted }}>
+                            Streak
+                        </Text>
+                    </View>
+
+                    <View style={{ alignItems: 'center' }}>
+                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.lg, color: colors.text }}>
+                            {accuracy}%
+                        </Text>
+                        <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted }}>
+                            {t('games.saccadic.accuracy') || 'Accuracy'}
+                        </Text>
+                    </View>
+                </View>
+            )}
+
+            {/* Target Area */}
+            <Animated.View
+                style={[
+                    {
+                        width: areaWidth,
+                        height: areaHeight,
+                        backgroundColor: colors.surfaceElevated,
+                        borderRadius: borderRadius.bento,
+                        borderWidth: 1,
+                        borderColor: colors.glassBorder,
+                        position: 'relative',
+                        ...glows.secondarySubtle,
+                    },
+                    missShakeStyle,
+                ]}
             >
                 {/* Countdown Overlay */}
                 {countdown !== null && (
@@ -298,7 +524,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                         <Text
                             style={{
                                 fontFamily: fontFamily.uiBold,
-                                fontSize: 56,
+                                fontSize: 64,
                                 color: colors.secondary,
                             }}
                         >
@@ -317,151 +543,58 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                     </View>
                 )}
 
-                {/* First Dot */}
-                <View
-                    style={{
-                        alignItems: 'center',
-                        marginRight: direction === 'horizontal' ? dotSpacing : 0,
-                        marginBottom: direction === 'vertical' ? dotSpacing : 0,
-                    }}
-                >
-                    {/* Rhythm ring */}
-                    <Animated.View
-                        style={[
-                            {
-                                position: 'absolute',
-                                width: dotSize + 30,
-                                height: dotSize + 30,
-                                borderRadius: (dotSize + 30) / 2,
-                                borderWidth: 2,
-                                borderColor: colors.secondary,
-                            },
-                            firstRhythmStyle,
-                        ]}
-                    />
-                    {/* Glow */}
-                    <Animated.View
-                        style={[
-                            {
-                                position: 'absolute',
-                                width: dotSize + 20,
-                                height: dotSize + 20,
-                                borderRadius: (dotSize + 20) / 2,
-                                backgroundColor: colors.secondaryGlow,
-                            },
-                            firstGlowStyle,
-                        ]}
-                    />
-                    {/* Dot */}
-                    <Animated.View
-                        style={[
-                            {
-                                width: dotSize,
-                                height: dotSize,
-                                borderRadius: dotSize / 2,
-                                backgroundColor: currentSide === 'first' ? colors.secondary : colors.surface,
-                                borderWidth: 2,
-                                borderColor: colors.secondary,
-                            },
-                            firstAnimatedStyle,
-                        ]}
-                    />
-                </View>
+                {/* Idle state message */}
+                {gameState === 'idle' && countdown === null && (
+                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg }}>
+                        <Crosshair size={48} color={colors.secondary} strokeWidth={1.5} />
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiMedium,
+                                fontSize: fontSize.md,
+                                color: colors.text,
+                                marginTop: spacing.md,
+                                textAlign: 'center',
+                            }}
+                        >
+                            {t('games.saccadic.tapToHit') || 'Tap targets as they light up!'}
+                        </Text>
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiRegular,
+                                fontSize: fontSize.sm,
+                                color: colors.textMuted,
+                                marginTop: spacing.xs,
+                                textAlign: 'center',
+                            }}
+                        >
+                            {t('games.saccadic.trainYourEyes') || 'Train rapid eye movements for faster reading'}
+                        </Text>
+                    </View>
+                )}
 
-                {/* Center guide line */}
-                <View
-                    style={{
-                        position: 'absolute',
-                        width: direction === 'horizontal' ? dotSpacing * 1.8 : 2,
-                        height: direction === 'horizontal' ? 2 : dotSpacing * 1.8,
-                        backgroundColor: colors.glassBorder,
-                    }}
-                />
+                {/* Render targets during gameplay */}
+                {(gameState === 'playing' || gameState === 'completed') &&
+                    positions.map((pos, index) => (
+                        <TargetDot
+                            key={index}
+                            index={index}
+                            position={pos}
+                            isActive={activeTarget === index}
+                            isPlaying={gameState === 'playing'}
+                            dotSize={dotSize}
+                            onTap={handleTargetTap}
+                            colors={colors}
+                        />
+                    ))
+                }
+            </Animated.View>
 
-                {/* Second Dot */}
-                <View
-                    style={{
-                        alignItems: 'center',
-                        marginLeft: direction === 'horizontal' ? dotSpacing : 0,
-                        marginTop: direction === 'vertical' ? dotSpacing : 0,
-                    }}
-                >
-                    {/* Rhythm ring */}
-                    <Animated.View
-                        style={[
-                            {
-                                position: 'absolute',
-                                width: dotSize + 30,
-                                height: dotSize + 30,
-                                borderRadius: (dotSize + 30) / 2,
-                                borderWidth: 2,
-                                borderColor: colors.secondary,
-                            },
-                            secondRhythmStyle,
-                        ]}
-                    />
-                    {/* Glow */}
-                    <Animated.View
-                        style={[
-                            {
-                                position: 'absolute',
-                                width: dotSize + 20,
-                                height: dotSize + 20,
-                                borderRadius: (dotSize + 20) / 2,
-                                backgroundColor: colors.secondaryGlow,
-                            },
-                            secondGlowStyle,
-                        ]}
-                    />
-                    {/* Dot */}
-                    <Animated.View
-                        style={[
-                            {
-                                width: dotSize,
-                                height: dotSize,
-                                borderRadius: dotSize / 2,
-                                backgroundColor: currentSide === 'second' ? colors.secondary : colors.surface,
-                                borderWidth: 2,
-                                borderColor: colors.secondary,
-                            },
-                            secondAnimatedStyle,
-                        ]}
-                    />
-                </View>
-            </View>
-
-            {/* Training Tip */}
-            {!isRunning && !isComplete && jumpCount === 0 && (
-                <View
-                    style={{
-                        marginTop: spacing.md,
-                        backgroundColor: colors.surface,
-                        borderRadius: borderRadius.md,
-                        padding: spacing.md,
-                        borderWidth: 1,
-                        borderColor: colors.glassBorder,
-                        width: areaWidth,
-                    }}
-                >
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiRegular,
-                            fontSize: fontSize.sm,
-                            color: colors.textMuted,
-                            textAlign: 'center',
-                        }}
-                    >
-                        ⚡ {t('games.saccadic.trainingTip')}
-                    </Text>
-                </View>
-            )}
-
-            {/* Completion Message */}
-            {isComplete && (
+            {/* Completed Results */}
+            {gameState === 'completed' && (
                 <View
                     style={{
                         marginTop: spacing.lg,
-                        alignItems: 'center',
+                        width: areaWidth,
                         backgroundColor: colors.surface,
                         borderRadius: borderRadius.lg,
                         padding: spacing.lg,
@@ -470,31 +603,61 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                         ...glows.secondary,
                     }}
                 >
+                    {/* Stars */}
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: spacing.md }}>
+                        {[1, 2, 3].map((star) => (
+                            <Text key={star} style={{ fontSize: 28, marginHorizontal: 4 }}>
+                                {star <= getStarRating() ? '⭐' : '☆'}
+                            </Text>
+                        ))}
+                    </View>
+
                     <Text
                         style={{
                             fontFamily: fontFamily.uiBold,
                             fontSize: fontSize.xl,
                             color: colors.secondary,
+                            textAlign: 'center',
                         }}
                     >
-                        ⚡ {t('games.saccadic.greatJob')}
+                        {t('games.saccadic.greatJob')}
                     </Text>
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiRegular,
-                            fontSize: fontSize.md,
-                            color: colors.text,
-                            marginTop: spacing.xs,
-                        }}
-                    >
-                        {TOTAL_JUMPS} precision {t('games.common.jumps')} at {SPEED_CONFIG[speed].interval}ms
-                    </Text>
+
+                    {/* Stats Grid */}
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: spacing.md }}>
+                        <View style={{ alignItems: 'center' }}>
+                            <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.lg, color: colors.text }}>
+                                {Math.round((hits / (hits + misses || 1)) * 100)}%
+                            </Text>
+                            <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted }}>
+                                Accuracy
+                            </Text>
+                        </View>
+                        <View style={{ alignItems: 'center' }}>
+                            <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.lg, color: colors.text }}>
+                                {avgReactionTime}ms
+                            </Text>
+                            <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted }}>
+                                Avg. Speed
+                            </Text>
+                        </View>
+                        <View style={{ alignItems: 'center' }}>
+                            <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize.lg, color: colors.text }}>
+                                {bestStreak}🔥
+                            </Text>
+                            <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.xs, color: colors.textMuted }}>
+                                Best Streak
+                            </Text>
+                        </View>
+                    </View>
+
                     <Text
                         style={{
                             fontFamily: fontFamily.uiRegular,
                             fontSize: fontSize.sm,
                             color: colors.textMuted,
-                            marginTop: spacing.xs,
+                            marginTop: spacing.md,
+                            textAlign: 'center',
                         }}
                     >
                         {t('games.saccadic.completeMsg')}
@@ -502,104 +665,109 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                 </View>
             )}
 
-            {/* Direction Toggle */}
-            <View
-                style={{
-                    flexDirection: 'row',
-                    marginTop: spacing.lg,
-                    backgroundColor: colors.surface,
-                    borderRadius: borderRadius.lg,
-                    padding: spacing.xs,
-                    borderWidth: 1,
-                    borderColor: colors.glassBorder,
-                }}
-            >
-                <Pressable
-                    onPress={() => setDirection('horizontal')}
-                    disabled={isRunning || countdown !== null}
+            {/* Pattern Selector - Only in idle state */}
+            {gameState === 'idle' && (
+                <View
                     style={{
                         flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingHorizontal: spacing.md,
-                        paddingVertical: spacing.sm,
-                        borderRadius: borderRadius.md,
-                        backgroundColor: direction === 'horizontal' ? colors.secondary : 'transparent',
+                        marginTop: spacing.lg,
+                        backgroundColor: colors.surface,
+                        borderRadius: borderRadius.lg,
+                        padding: spacing.xs,
+                        borderWidth: 1,
+                        borderColor: colors.glassBorder,
                     }}
                 >
-                    <ArrowLeftRight size={16} color={direction === 'horizontal' ? colors.white : colors.textMuted} strokeWidth={2} />
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiMedium,
-                            fontSize: fontSize.sm,
-                            color: direction === 'horizontal' ? colors.white : colors.textMuted,
-                            marginLeft: spacing.xs,
-                        }}
-                    >
-                        {t('games.saccadic.horizontal')}
-                    </Text>
-                </Pressable>
-                <Pressable
-                    onPress={() => setDirection('vertical')}
-                    disabled={isRunning || countdown !== null}
-                    style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingHorizontal: spacing.md,
-                        paddingVertical: spacing.sm,
-                        borderRadius: borderRadius.md,
-                        backgroundColor: direction === 'vertical' ? colors.secondary : 'transparent',
-                    }}
-                >
-                    <ArrowUpDown size={16} color={direction === 'vertical' ? colors.white : colors.textMuted} strokeWidth={2} />
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiMedium,
-                            fontSize: fontSize.sm,
-                            color: direction === 'vertical' ? colors.white : colors.textMuted,
-                            marginLeft: spacing.xs,
-                        }}
-                    >
-                        {t('games.saccadic.vertical')}
-                    </Text>
-                </Pressable>
-            </View>
-
-            {/* Speed Selector */}
-            <View
-                style={{
-                    flexDirection: 'row',
-                    marginTop: spacing.md,
-                    backgroundColor: colors.surface,
-                    borderRadius: borderRadius.lg,
-                    padding: spacing.xs,
-                    borderWidth: 1,
-                    borderColor: colors.glassBorder,
-                }}
-            >
-                {(Object.keys(SPEED_CONFIG) as SpeedLevel[]).map((level) => (
-                    <Pressable
-                        key={level}
-                        onPress={() => setSpeed(level)}
-                        disabled={isRunning || countdown !== null}
-                        style={{
-                            paddingHorizontal: spacing.md,
-                            paddingVertical: spacing.sm,
-                            borderRadius: borderRadius.md,
-                            backgroundColor: speed === level ? colors.secondary : 'transparent',
-                        }}
-                    >
-                        <Text
+                    {(Object.keys(patternConfigs) as PatternType[]).map((p) => (
+                        <Pressable
+                            key={p}
+                            onPress={() => setPattern(p)}
                             style={{
-                                fontFamily: fontFamily.uiMedium,
-                                fontSize: fontSize.sm,
-                                color: speed === level ? colors.white : colors.textMuted,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                paddingHorizontal: spacing.sm,
+                                paddingVertical: spacing.sm,
+                                borderRadius: borderRadius.md,
+                                backgroundColor: pattern === p ? colors.secondary : 'transparent',
                             }}
                         >
-                            {t(`games.saccadic.speed.${level}`)}
-                        </Text>
-                    </Pressable>
-                ))}
-            </View>
+                            {patternConfigs[p].icon}
+                            <Text
+                                style={{
+                                    fontFamily: fontFamily.uiMedium,
+                                    fontSize: fontSize.xs,
+                                    color: pattern === p ? colors.white : colors.textMuted,
+                                    marginLeft: 4,
+                                }}
+                            >
+                                {patternConfigs[p].label}
+                            </Text>
+                        </Pressable>
+                    ))}
+                </View>
+            )}
+
+            {/* Difficulty Selector - Only in idle state */}
+            {gameState === 'idle' && (
+                <View
+                    style={{
+                        marginTop: spacing.md,
+                        width: areaWidth,
+                    }}
+                >
+                    {(Object.keys(DIFFICULTY_CONFIG) as DifficultyLevel[]).map((level) => (
+                        <Pressable
+                            key={level}
+                            onPress={() => setDifficulty(level)}
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                paddingHorizontal: spacing.md,
+                                paddingVertical: spacing.sm + 2,
+                                borderRadius: borderRadius.md,
+                                backgroundColor: difficulty === level ? colors.surface : 'transparent',
+                                borderWidth: difficulty === level ? 1 : 0,
+                                borderColor: colors.secondary,
+                                marginBottom: spacing.xs,
+                            }}
+                        >
+                            <View style={{
+                                width: 20,
+                                height: 20,
+                                borderRadius: 10,
+                                backgroundColor: difficulty === level ? colors.secondary : colors.glassBorder,
+                                marginRight: spacing.sm,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                {difficulty === level && (
+                                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.white }} />
+                                )}
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text
+                                    style={{
+                                        fontFamily: fontFamily.uiMedium,
+                                        fontSize: fontSize.sm,
+                                        color: difficulty === level ? colors.text : colors.textMuted,
+                                    }}
+                                >
+                                    {t(`games.saccadic.difficulty.${level}`) || DIFFICULTY_CONFIG[level].label}
+                                </Text>
+                                <Text
+                                    style={{
+                                        fontFamily: fontFamily.uiRegular,
+                                        fontSize: fontSize.xs,
+                                        color: colors.textMuted,
+                                    }}
+                                >
+                                    {DIFFICULTY_CONFIG[level].description}
+                                </Text>
+                            </View>
+                        </Pressable>
+                    ))}
+                </View>
+            )}
 
             {/* Controls */}
             <View
@@ -610,7 +778,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                 }}
             >
                 <Pressable
-                    onPress={isRunning ? handlePause : handleStart}
+                    onPress={handleStart}
                     disabled={countdown !== null}
                     style={({ pressed }) => ({
                         paddingHorizontal: spacing.xl,
@@ -622,11 +790,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                         opacity: countdown !== null ? 0.5 : 1,
                     })}
                 >
-                    {isRunning ? (
-                        <Pause size={20} color={colors.white} strokeWidth={2} />
-                    ) : (
-                        <Play size={20} color={colors.white} strokeWidth={2} />
-                    )}
+                    <Play size={20} color={colors.white} strokeWidth={2} />
                     <Text
                         style={{
                             fontFamily: fontFamily.uiBold,
@@ -635,12 +799,14 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                             marginLeft: spacing.sm,
                         }}
                     >
-                        {isRunning ? t('games.common.pause') : isComplete ? t('games.common.restart') : t('games.common.start')}
+                        {gameState === 'completed'
+                            ? t('games.common.playAgain')
+                            : t('games.common.start')}
                     </Text>
                 </Pressable>
 
                 <Pressable
-                    onPress={handleReset}
+                    onPress={resetGame}
                     disabled={countdown !== null}
                     style={({ pressed }) => ({
                         paddingHorizontal: spacing.md,

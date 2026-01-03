@@ -187,13 +187,29 @@
         },
         "saccadic": {
             "instructions": "Gözleri anında noktalar arasında zıplatın. Baş sabit, taşma yok!",
+            "tapInstructions": "Hedeflere aydınlandıklarında dokunun. Sakkadik hızınızı eğitin!",
+            "tapToHit": "Hedeflere aydınlandıklarında dokunun!",
+            "trainYourEyes": "Daha hızlı okuma için hızlı göz hareketlerini eğitin",
             "interval": "aralık",
             "getReady": "Zıplamaya hazır olun!",
             "horizontal": "Yatay",
             "vertical": "Dikey",
+            "accuracy": "İsabet",
             "trainingTip": "Bu, daha hızlı satır okuma için 'Geri Dönüşleri' eğitir ve istemsiz gerilemeleri azaltır.",
             "greatJob": "Harika Sakkadlar!",
             "completeMsg": "Anti-gerileme eğitimi tamamlandı ✓",
+            "patterns": {
+                "lineScan": "Satır Tarama",
+                "returnSweep": "Geri Dönüş",
+                "diagonal": "Çapraz",
+                "random": "Rastgele"
+            },
+            "difficulty": {
+                "beginner": "Başlangıç",
+                "intermediate": "Orta",
+                "advanced": "İleri",
+                "expert": "Uzman"
+            },
             "speed": {
                 "slow": "Yavaş",
                 "medium": "Orta",
@@ -217,6 +233,7 @@
         },
         "peripheral": {
             "instructions": "Gözleri ⊕ merkeze kilitleyin. Kelimeleri aşırı çevresel görüşte yakalayın.",
+            "instructionsSequence": "Gözleri ⊕ merkeze kilitleyin. Kelimeleri sırayla hatırlayın.",
             "eyesLocked": "Gözler merkeze KİLİTLİ!",
             "question": "Hangi kelimeyi yakaladınız?",
             "selectDifficulty": "Zorluk Seçin",
@@ -236,87 +253,55 @@
                 "keepGoing": "Çalışmaya devam edin, gelişiyorsunuz!",
                 "challenging": "Bu zorlu! Daha fazla pratik yapın."
             },
-            "wordGroups": [
-                {
-                    "target": "ODAK",
-                    "distractors": [
-                        "ADAK",
-                        "ODA",
-                        "UDAK"
-                    ]
-                },
-                {
-                    "target": "KEDİ",
-                    "distractors": [
-                        "YEDİ",
-                        "KATI",
-                        "KEMİ"
-                    ]
-                },
-                {
-                    "target": "OKUL",
-                    "distractors": [
-                        "AKIL",
-                        "OĞUL",
-                        "ÖKÜZ"
-                    ]
-                },
-                {
-                    "target": "ELMA",
-                    "distractors": [
-                        "ALMA",
-                        "ELLA",
-                        "EMMA"
-                    ]
-                },
-                {
-                    "target": "HAVA",
-                    "distractors": [
-                        "KAVA",
-                        "DAVA",
-                        "YAVA"
-                    ]
-                },
-                {
-                    "target": "KAPI",
-                    "distractors": [
-                        "YAPI",
-                        "SAPI",
-                        "KATI"
-                    ]
-                },
-                {
-                    "target": "MASA",
-                    "distractors": [
-                        "KASA",
-                        "YASA",
-                        "TASA"
-                    ]
-                },
-                {
-                    "target": "SAAT",
-                    "distractors": [
-                        "VAAT",
-                        "NAAT",
-                        "SAFT"
-                    ]
-                },
-                {
-                    "target": "KITA",
-                    "distractors": [
-                        "RİTA",
-                        "ÇITA",
-                        "KINA"
-                    ]
-                },
-                {
-                    "target": "DERS",
-                    "distractors": [
-                        "TERS",
-                        "PERS",
-                        "DERT"
-                    ]
-                }
+            "wordPool": [
+                "MASA",
+                "KASA",
+                "YASA",
+                "FASA",
+                "ELMA",
+                "ALMA",
+                "SALMA",
+                "DALMA",
+                "OKUL",
+                "OĞUL",
+                "OYUN",
+                "ODUN",
+                "HAVA",
+                "DAVA",
+                "KAVA",
+                "SAVA",
+                "KAPI",
+                "YAPI",
+                "SAPI",
+                "TAPI",
+                "KEDİ",
+                "YEDİ",
+                "BEDİ",
+                "SEDİ",
+                "SAAT",
+                "VAAT",
+                "FAAT",
+                "KAAT",
+                "ODAK",
+                "ADAK",
+                "KADAK",
+                "BUDAK",
+                "DERS",
+                "TERS",
+                "PERS",
+                "SERS",
+                "BALIK",
+                "KALIK",
+                "SALIK",
+                "TALIK",
+                "GECE",
+                "SECE",
+                "BECE",
+                "PECE",
+                "ARABA",
+                "ADABA",
+                "ATABA",
+                "AKABA"
             ]
         },
         "academic": {

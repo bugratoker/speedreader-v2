@@ -187,13 +187,29 @@
         },
         "saccadic": {
             "instructions": "Jump eyes between dots instantly. Head still, zero overshoot!",
+            "tapInstructions": "Tap the targets as they light up. Train your saccadic speed!",
+            "tapToHit": "Tap targets as they light up!",
+            "trainYourEyes": "Train rapid eye movements for faster reading",
             "interval": "interval",
             "getReady": "Get ready to jump!",
             "horizontal": "Horizontal",
             "vertical": "Vertical",
+            "accuracy": "Accuracy",
             "trainingTip": "This trains \"Return Sweeps\" for faster line-to-line reading and reduces involuntary regressions.",
             "greatJob": "Great Saccades!",
             "completeMsg": "Anti-regression training complete ✓",
+            "patterns": {
+                "lineScan": "Line Scan",
+                "returnSweep": "Return Sweep",
+                "diagonal": "Diagonal",
+                "random": "Random"
+            },
+            "difficulty": {
+                "beginner": "Beginner",
+                "intermediate": "Intermediate",
+                "advanced": "Advanced",
+                "expert": "Expert"
+            },
             "speed": {
                 "slow": "Slow",
                 "medium": "Medium",
@@ -217,6 +233,7 @@
         },
         "peripheral": {
             "instructions": "Lock eyes on ⊕ center. Catch words in extreme peripheral vision.",
+            "instructionsSequence": "Lock eyes on ⊕ center. Recall words in order.",
             "eyesLocked": "Eyes LOCKED on center!",
             "question": "Which word did you catch?",
             "selectDifficulty": "Select Difficulty",
@@ -236,119 +253,55 @@
                 "keepGoing": "Keep training, improving!",
                 "challenging": "This is challenging! Practice more."
             },
-            "wordGroups": [
-                {
-                    "target": "FOCUS",
-                    "distractors": [
-                        "LOCUS",
-                        "FOGUS",
-                        "FOUND"
-                    ]
-                },
-                {
-                    "target": "SPEED",
-                    "distractors": [
-                        "SPIED",
-                        "STEED",
-                        "SPELL"
-                    ]
-                },
-                {
-                    "target": "BRAIN",
-                    "distractors": [
-                        "DRAIN",
-                        "BRAID",
-                        "TRAIN"
-                    ]
-                },
-                {
-                    "target": "LEARN",
-                    "distractors": [
-                        "YEARN",
-                        "LEANT",
-                        "LEAN"
-                    ]
-                },
-                {
-                    "target": "THINK",
-                    "distractors": [
-                        "THICK",
-                        "THUNK",
-                        "BLINK"
-                    ]
-                },
-                {
-                    "target": "POWER",
-                    "distractors": [
-                        "TOWER",
-                        "PORER",
-                        "POKER"
-                    ]
-                },
-                {
-                    "target": "SHARP",
-                    "distractors": [
-                        "SHAPE",
-                        "SHARK",
-                        "SHARD"
-                    ]
-                },
-                {
-                    "target": "QUICK",
-                    "distractors": [
-                        "QUIET",
-                        "QUACK",
-                        "THICK"
-                    ]
-                },
-                {
-                    "target": "ALERT",
-                    "distractors": [
-                        "ALTER",
-                        "AVERT",
-                        "ALOFT"
-                    ]
-                },
-                {
-                    "target": "SKILL",
-                    "distractors": [
-                        "SKULL",
-                        "SPILL",
-                        "STILL"
-                    ]
-                },
-                {
-                    "target": "VISION",
-                    "distractors": [
-                        "FUSION",
-                        "VISON",
-                        "VISUAL"
-                    ]
-                },
-                {
-                    "target": "EXPAND",
-                    "distractors": [
-                        "EXPEND",
-                        "EXTEND",
-                        "EXPLND"
-                    ]
-                },
-                {
-                    "target": "DECODE",
-                    "distractors": [
-                        "RECODE",
-                        "ENCODE",
-                        "DECOBE"
-                    ]
-                },
-                {
-                    "target": "ABSORB",
-                    "distractors": [
-                        "ABSORV",
-                        "ADSORB",
-                        "ABSURD"
-                    ]
-                }
+            "wordPool": [
+                "CAST",
+                "PAST",
+                "FAST",
+                "LAST",
+                "MAKE",
+                "TAKE",
+                "BAKE",
+                "LAKE",
+                "READ",
+                "LEAD",
+                "BEAD",
+                "DEAD",
+                "MIND",
+                "FIND",
+                "BIND",
+                "KIND",
+                "WORK",
+                "FORK",
+                "CORK",
+                "PORK",
+                "LIGHT",
+                "SIGHT",
+                "MIGHT",
+                "NIGHT",
+                "BRAIN",
+                "DRAIN",
+                "TRAIN",
+                "GRAIN",
+                "SPEED",
+                "STEED",
+                "BLEED",
+                "GREED",
+                "THINK",
+                "BLINK",
+                "DRINK",
+                "SHRINK",
+                "POWER",
+                "TOWER",
+                "LOWER",
+                "MOWER",
+                "SKILL",
+                "STILL",
+                "SPILL",
+                "GRILL",
+                "SHARP",
+                "SHAPE",
+                "SHARK",
+                "SHARE"
             ]
         },
         "academic": {

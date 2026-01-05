@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import Animated, { FadeIn, FadeInDown, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useTheme } from '../../theme';
+import { PremiumButton } from '../../components/ui/PremiumButton';
 import {
     Grid3X3,
     Eye,
@@ -49,6 +50,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_GAP = 12;
 const CARD_SIZE = (SCREEN_WIDTH - 48 - CARD_GAP) / 2;
 
+
 // Minimal Grid Card Component
 const MinimalCard: React.FC<{
     title: string;
@@ -78,91 +80,92 @@ const MinimalCard: React.FC<{
     return (
         <Animated.View
             entering={FadeInUp.delay(index * 80).springify()}
-            style={animatedStyle}
         >
-            <Pressable
-                onPressIn={() => { scale.value = withSpring(0.95); }}
-                onPressOut={() => { scale.value = withSpring(1); }}
-                onPress={onPress}
-                style={{
-                    width: CARD_SIZE,
-                    height: CARD_SIZE,
-                    backgroundColor: colors.surface,
-                    borderRadius: borderRadius.bento,
-                    borderWidth: 1,
-                    borderColor: colors.glassBorder,
-                    padding: spacing.md,
-                    justifyContent: 'space-between',
-                    shadowColor: accentColor,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 12,
-                    elevation: 4,
-                    overflow: 'hidden',
-                }}
-            >
-                {/* Glow Background */}
-                <View
+            <Animated.View style={animatedStyle}>
+                <Pressable
+                    onPressIn={() => { scale.value = withSpring(0.95); }}
+                    onPressOut={() => { scale.value = withSpring(1); }}
+                    onPress={onPress}
                     style={{
-                        position: 'absolute',
-                        top: -30,
-                        right: -30,
-                        width: 100,
-                        height: 100,
-                        borderRadius: 50,
-                        backgroundColor: glowColor,
-                        opacity: 0.5,
-                    }}
-                />
-
-                {/* Icon */}
-                <View
-                    style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: 28,
-                        backgroundColor: glowColor,
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        width: CARD_SIZE,
+                        height: CARD_SIZE,
+                        backgroundColor: colors.surface,
+                        borderRadius: borderRadius.bento,
+                        borderWidth: 1,
+                        borderColor: colors.glassBorder,
+                        padding: spacing.md,
+                        justifyContent: 'space-between',
+                        shadowColor: accentColor,
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.15,
+                        shadowRadius: 12,
+                        elevation: 4,
+                        overflow: 'hidden',
                     }}
                 >
-                    {icon}
-                </View>
-
-                {/* Bottom Content */}
-                <View>
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiBold,
-                            fontSize: fontSize.md,
-                            color: colors.text,
-                            marginBottom: 4,
-                        }}
-                        numberOfLines={1}
-                    >
-                        {title}
-                    </Text>
+                    {/* Glow Background */}
                     <View
                         style={{
-                            backgroundColor: getDifficultyColor() + '20',
-                            paddingHorizontal: spacing.sm,
-                            paddingVertical: 2,
-                            borderRadius: borderRadius.sm,
-                            alignSelf: 'flex-start',
+                            position: 'absolute',
+                            top: -30,
+                            right: -30,
+                            width: 100,
+                            height: 100,
+                            borderRadius: 50,
+                            backgroundColor: glowColor,
+                            opacity: 0.5,
+                        }}
+                    />
+
+                    {/* Icon */}
+                    <View
+                        style={{
+                            width: 56,
+                            height: 56,
+                            borderRadius: 28,
+                            backgroundColor: glowColor,
+                            justifyContent: 'center',
+                            alignItems: 'center',
                         }}
                     >
+                        {icon}
+                    </View>
+
+                    {/* Bottom Content */}
+                    <View>
                         <Text
                             style={{
-                                fontFamily: fontFamily.uiMedium,
-                                fontSize: fontSize.xs,
-                                color: getDifficultyColor(),
+                                fontFamily: fontFamily.uiBold,
+                                fontSize: fontSize.md,
+                                color: colors.text,
+                                marginBottom: 4,
+                            }}
+                            numberOfLines={1}
+                        >
+                            {title}
+                        </Text>
+                        <View
+                            style={{
+                                backgroundColor: getDifficultyColor() + '20',
+                                paddingHorizontal: spacing.sm,
+                                paddingVertical: 2,
+                                borderRadius: borderRadius.sm,
+                                alignSelf: 'flex-start',
                             }}
                         >
-                            {difficulty === 'warmUp' ? '🔥 Isınma' : difficulty === 'training' ? '💪 Antrenman' : '⚡ Meydan Okuma'}
-                        </Text>
+                            <Text
+                                style={{
+                                    fontFamily: fontFamily.uiMedium,
+                                    fontSize: fontSize.xs,
+                                    color: getDifficultyColor(),
+                                }}
+                            >
+                                {difficulty === 'warmUp' ? 'Isınma' : difficulty === 'training' ? ' Antrenman' : ' Meydan Okuma'}
+                            </Text>
+                        </View>
                     </View>
-                </View>
-            </Pressable>
+                </Pressable>
+            </Animated.View>
         </Animated.View>
     );
 };
@@ -574,32 +577,18 @@ export const TrainingScreen: React.FC = () => {
                         entering={FadeInUp.delay(400).springify()}
                         style={{ marginTop: spacing.xl }}
                     >
-                        <Pressable
-                            onPress={() => setScreenState('active')}
-                            style={({ pressed }) => ({
-                                backgroundColor: pressed ? currentExercise.accentColor + 'DD' : currentExercise.accentColor,
-                                borderRadius: borderRadius.lg,
-                                paddingVertical: spacing.md,
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                shadowColor: currentExercise.accentColor,
-                                shadowOffset: { width: 0, height: 6 },
-                                shadowOpacity: 0.4,
-                                shadowRadius: 12,
-                                elevation: 8,
-                            })}
-                        >
-                            <Play size={22} color="#ffffff" fill="#ffffff" strokeWidth={2} />
-                            <Text style={{
-                                fontFamily: fontFamily.uiBold,
-                                fontSize: fontSize.lg,
-                                color: '#ffffff',
-                                marginLeft: spacing.sm,
-                            }}>
-                                {t('games.common.start', { defaultValue: 'Antrenmana Başla' })}
-                            </Text>
-                        </Pressable>
+                        <View style={{ alignItems: 'center' }}>
+                            <PremiumButton
+                                title={t('games.common.start', { defaultValue: 'Antrenmana Başla' })}
+                                onPress={() => setScreenState('active')}
+                                icon={Play}
+                                variant="primary"
+                                size="xl"
+                                fullWidth
+                                animatePulse
+                                customColor={currentExercise.accentColor}
+                            />
+                        </View>
                     </Animated.View>
                 </ScrollView>
             </View>

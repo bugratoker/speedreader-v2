@@ -13,6 +13,25 @@ export const fontFamily = {
     readingItalic: 'PlayfairDisplay_400Regular_Italic',
 } as const;
 
+export const readingFontFamilies = {
+    Inter: {
+        regular: 'Inter_400Regular',
+        bold: 'Inter_700Bold',
+    },
+    Merriweather: {
+        regular: 'Merriweather_400Regular',
+        bold: 'Merriweather_700Bold',
+    },
+    OpenDyslexic: {
+        regular: 'Inter_400Regular', // Fallback as font not available
+        bold: 'Inter_700Bold',
+    },
+    Atkinson: {
+        regular: 'AtkinsonHyperlegible_400Regular',
+        bold: 'AtkinsonHyperlegible_700Bold',
+    },
+} as const;
+
 export const fontSize = {
     // UI Text
     xs: 12,

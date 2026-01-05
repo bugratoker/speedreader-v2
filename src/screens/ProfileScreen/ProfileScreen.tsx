@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { User, Globe, Moon, Sun } from 'lucide-react-native';
 import { useTheme } from '../../theme';
-import { LanguageSelector } from '../../components/LanguageSelector';
+import { LanguageSelector } from '../../components';
 
 export const ProfileScreen: React.FC = () => {
     const { t } = useTranslation();

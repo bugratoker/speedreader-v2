@@ -51,13 +51,75 @@ export const textToBionicWords = (text: string): BionicWord[] => {
 
 /**
  * Split text into chunks of N words
+ * Supports smart phrase-based chunking that respects natural language boundaries
  */
-export const textToChunks = (text: string, chunkSize: number = 3): string[][] => {
+export const textToChunks = (
+    text: string,
+    chunkSize: number = 3,
+    useSmartChunking: boolean = true
+): string[][] => {
     const words = text.split(/\s+/).filter(w => w.length > 0);
-    const chunks: string[][] = [];
 
-    for (let i = 0; i < words.length; i += chunkSize) {
-        chunks.push(words.slice(i, i + chunkSize));
+    if (!useSmartChunking) {
+        // Simple mechanical chunking
+        const chunks: string[][] = [];
+        for (let i = 0; i < words.length; i += chunkSize) {
+            chunks.push(words.slice(i, i + chunkSize));
+        }
+        return chunks;
+    }
+
+    // Smart phrase-based chunking
+    const chunks: string[][] = [];
+    let currentChunk: string[] = [];
+
+    // Words that typically start new phrases (break BEFORE these)
+    const phraseStarters = new Set([
+        // English
+        'the', 'a', 'an', 'this', 'that', 'these', 'those',
+        'and', 'but', 'or', 'so', 'yet', 'for', 'nor',
+        'when', 'while', 'if', 'unless', 'although', 'because', 'since',
+        'who', 'which', 'that', 'where', 'what', 'how', 'why',
+        'in', 'on', 'at', 'by', 'with', 'from', 'to', 'into', 'onto',
+        'however', 'therefore', 'moreover', 'furthermore', 'meanwhile',
+        // Turkish
+        've', 'ama', 'fakat', 'veya', 'ya da', 'çünkü', 'için',
+        'bu', 'şu', 'o', 'bunlar', 'şunlar', 'onlar',
+        'ile', 'gibi', 'kadar', 'üzere', 'rağmen', 'dolayı',
+        'ancak', 'oysa', 'halbuki', 'yani', 'öyleyse',
+    ]);
+
+    // Punctuation that ends phrases (break AFTER these)
+    const endPunctuation = /[.!?,;:—–-]$/;
+
+    for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        const wordLower = word.toLowerCase().replace(/[^a-zçğışöü]/g, '');
+        const prevWord = i > 0 ? words[i - 1] : '';
+
+        // Should we break before this word?
+        const shouldBreakBefore =
+            currentChunk.length >= chunkSize || // Hit max size
+            (currentChunk.length >= 2 && phraseStarters.has(wordLower)) || // Natural phrase start
+            (currentChunk.length >= 2 && endPunctuation.test(prevWord)); // Previous word ended phrase
+
+        if (shouldBreakBefore && currentChunk.length > 0) {
+            chunks.push(currentChunk);
+            currentChunk = [];
+        }
+
+        currentChunk.push(word);
+
+        // Force break after punctuation at max size
+        if (currentChunk.length >= chunkSize && endPunctuation.test(word)) {
+            chunks.push(currentChunk);
+            currentChunk = [];
+        }
+    }
+
+    // Don't forget the last chunk
+    if (currentChunk.length > 0) {
+        chunks.push(currentChunk);
     }
 
     return chunks;

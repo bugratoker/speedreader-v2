@@ -1,0 +1,1 @@
+export { DualColumnReading } from './DualColumnReading';

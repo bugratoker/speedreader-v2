@@ -10,7 +10,8 @@
         "seconds": "saniye",
         "minute": "dakika",
         "skip": "Atla",
-        "done": "Tamam"
+        "done": "Tamam",
+        "undo": "Geri Al"
     },
     "welcome": {
         "slide1": {
@@ -81,11 +82,48 @@
     },
     "library": {
         "title": "Kütüphane",
-        "subtitle": "Kitaplarınız ve haber akışınız"
+        "subtitle": "Kitaplarınız ve haber akışınız",
+        "categories": {
+            "all": "Tümü",
+            "continue": "Okumaya Devam",
+            "recent": "Son Okunanlar",
+            "recommended": "Önerilen"
+        },
+        "words": "kelime",
+        "remaining": "kaldı",
+        "continue": "Devam Et",
+        "start": "Okumaya Başla",
+        "empty": "Bu kategoride kitap yok"
     },
     "read": {
         "title": "Hızlı Okuyucu",
-        "modes": "RSVP • Biyonik • Parçalama"
+        "modes": "RSVP • Biyonik • Parçalama",
+        "settings": {
+            "title": "Okuma Ayarları",
+            "general": "Genel",
+            "appearance": "Görünüm",
+            "ai": "Yapay Zeka Özellikleri",
+            "autoImage": "Otomatik Görsel Üretimi",
+            "autoImageDesc": "Her 300 kelimede yapay zeka görseli oluştur",
+            "autoQuestion": "Otomatik Soru Modu",
+            "autoQuestionDesc": "Okumadan sonra kavrama testi yap",
+            "smartCountdown": "Akıllı Geri Sayım",
+            "smartCountdownDesc": "Başlamadan önce 3-2-1 göster",
+            "hapticFeedback": "Dokunsal Geri Bildirim",
+            "hapticFeedbackDesc": "Etkileşimlerde titreşim ver",
+            "readingSounds": "Okuma Sesleri",
+            "readingSoundsDesc": "Ses efektleri çal",
+            "peripheralHighlight": "Periferik Vurgulama",
+            "peripheralHighlightDesc": "Gelişmiş görsel rehberler",
+            "textSize": "Yazı Boyutu",
+            "textSizeDesc": "Okuma yazı boyutunu ayarla",
+            "fontSelection": "Metin Yazı Tipi",
+            "chunkSettings": "Parçalama Okuma",
+            "chunkSize": "Parça Boyutu",
+            "chunkSizeDesc": "Parça başına kelime (2-5)",
+            "smartChunking": "Akıllı Cümle Gruplama",
+            "smartChunkingDesc": "Kelimeleri doğal ifadelerle grupla"
+        }
     },
     "training": {
         "title": "Antrenman Merkezi",

@@ -19,8 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Zap, Brain, Target, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../../theme';
-import { RSVPPreview } from '../../components/RSVPPreview';
-import { AIVisualizationCard } from '../../components/AIVisualizationCard';
+import { RSVPPreview, AIVisualizationCard } from '../../components';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 

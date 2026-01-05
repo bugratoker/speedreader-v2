@@ -4,7 +4,7 @@
  */
 
 // Available reading modes
-export type ReadingMode = 'rsvp' | 'bionic' | 'chunk' | 'guided';
+export type ReadingMode = 'rsvp' | 'bionic' | 'chunk' | 'guided' | 'dual-column';
 
 // Reading engine configuration
 export interface ReadingEngineConfig {
@@ -12,6 +12,7 @@ export interface ReadingEngineConfig {
     mode: ReadingMode;
     initialWpm?: number;
     chunkSize?: number; // For chunking mode (default: 3)
+    useSmartChunking?: boolean; // Use intelligent phrase-based chunking
     onComplete?: () => void;
     onProgress?: (progress: number) => void;
 }
@@ -39,6 +40,9 @@ export interface ReadingEngineActions {
     speedUp: () => void;
     slowDown: () => void;
     setMode: (mode: ReadingMode) => void;
+    setCurrentIndex: (index: number) => void;
+    undo: () => void;
+    elapsedTime: number;
 }
 
 // Combined engine interface
@@ -46,6 +50,8 @@ export interface ReadingEngine extends ReadingEngineState, ReadingEngineActions 
     // Mode-specific data
     currentWord?: string;      // RSVP
     currentChunk?: string[];   // Chunk
+    previousChunk?: string[];  // Chunk context (for preview)
+    nextChunk?: string[];      // Chunk context (for preview)
     bionicText?: BionicWord[]; // Bionic
     words: string[];
 }
@@ -63,6 +69,8 @@ export const MIN_WPM = 100;
 export const MAX_WPM = 800;
 export const WPM_STEP = 25;
 export const DEFAULT_CHUNK_SIZE = 3;
+export const MIN_CHUNK_SIZE = 2;
+export const MAX_CHUNK_SIZE = 5;
 
 // Mode labels for UI
 export const MODE_LABELS: Record<ReadingMode, { en: string; tr: string }> = {
@@ -70,6 +78,7 @@ export const MODE_LABELS: Record<ReadingMode, { en: string; tr: string }> = {
     bionic: { en: 'Bionic', tr: 'Biyonik' },
     chunk: { en: 'Chunk', tr: 'Parçalama' },
     guided: { en: 'Guided', tr: 'Rehberli' },
+    'dual-column': { en: 'Dual-Column', tr: 'Çift Sütun' },
 };
 
 // Mode descriptions
@@ -89,5 +98,9 @@ export const MODE_DESCRIPTIONS: Record<ReadingMode, { en: string; tr: string }> 
     guided: {
         en: 'Neon pacer guides your reading',
         tr: 'Neon işaretçi okumana rehberlik eder'
+    },
+    'dual-column': {
+        en: 'Saccade between two columns',
+        tr: 'İki sütun arasında sakad yap'
     },
 };

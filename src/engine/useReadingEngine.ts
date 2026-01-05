@@ -3,7 +3,7 @@
  * Unified hook for all reading modes with shared controls
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
     ReadingMode,
     ReadingEngine,
@@ -23,6 +23,7 @@ export const useReadingEngine = (config: ReadingEngineConfig): ReadingEngine => 
         mode: initialMode,
         initialWpm = DEFAULT_WPM,
         chunkSize = DEFAULT_CHUNK_SIZE,
+        useSmartChunking = true,
         onComplete,
         onProgress,
     } = config;
@@ -34,20 +35,36 @@ export const useReadingEngine = (config: ReadingEngineConfig): ReadingEngine => 
     const [isPlaying, setIsPlaying] = useState(false);
     const [isComplete, setIsComplete] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [elapsedTime, setElapsedTime] = useState(0); // in seconds
 
     // Refs for callbacks
     const onCompleteRef = useRef(onComplete);
     const onProgressRef = useRef(onProgress);
+
+    // Refs for timer logic
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const expectedTimeRef = useRef<number>(0);
+    const currentIndexRef = useRef(currentIndex);
+
+    // Keep currentIndex ref in sync
+    useEffect(() => {
+        currentIndexRef.current = currentIndex;
+    }, [currentIndex]);
 
     useEffect(() => {
         onCompleteRef.current = onComplete;
         onProgressRef.current = onProgress;
     }, [onComplete, onProgress]);
 
-    // Derived data based on mode
-    const words = textToWords(text);
-    const chunks = textToChunks(text, chunkSize);
-    const bionicWords = textToBionicWords(text);
+    // Derived data based on mode - Memoized to prevent recalculation on every tick
+    const words = useMemo(() => textToWords(text), [text]);
+
+    const chunks = useMemo(() =>
+        textToChunks(text, chunkSize, useSmartChunking),
+        [text, chunkSize, useSmartChunking]
+    );
+
+    const bionicWords = useMemo(() => textToBionicWords(text), [text]);
 
     // Total items depends on mode
     const totalItems = mode === 'chunk' ? chunks.length : words.length;
@@ -58,6 +75,8 @@ export const useReadingEngine = (config: ReadingEngineConfig): ReadingEngine => 
     // Current display data
     const currentWord = words[currentIndex] || '';
     const currentChunk = mode === 'chunk' ? chunks[currentIndex] : undefined;
+    const previousChunk = mode === 'chunk' && currentIndex > 0 ? chunks[currentIndex - 1] : undefined;
+    const nextChunk = mode === 'chunk' && currentIndex < chunks.length - 1 ? chunks[currentIndex + 1] : undefined;
 
     // Calculate delay based on WPM and mode
     const getDelay = useCallback(() => {
@@ -74,25 +93,53 @@ export const useReadingEngine = (config: ReadingEngineConfig): ReadingEngine => 
         onProgressRef.current?.(progress);
     }, [progress]);
 
-    // Timer effect for RSVP and Chunking modes
+    // Timer loop with drift correction
+    // Timer loop with drift correction
     useEffect(() => {
-        if (!isPlaying || isPaused || isComplete) return;
-        if (mode === 'bionic') return; // Bionic doesn't auto-advance
+        if (!isPlaying || isPaused || isComplete) {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+                timerRef.current = null;
+            }
+            return;
+        }
 
         const delay = getDelay();
+        // Set initial expected time
+        expectedTimeRef.current = Date.now() + delay;
 
-        const timer = setTimeout(() => {
-            if (currentIndex < totalItems - 1) {
-                setCurrentIndex(prev => prev + 1);
-            } else {
+        const tick = () => {
+            const now = Date.now();
+
+            // Check if we reached the end
+            if (currentIndexRef.current >= totalItems - 1) {
                 setIsComplete(true);
                 setIsPlaying(false);
                 onCompleteRef.current?.();
+                return;
             }
-        }, delay);
 
-        return () => clearTimeout(timer);
-    }, [isPlaying, isPaused, isComplete, currentIndex, totalItems, mode, getDelay]);
+            // Move to next word
+            setCurrentIndex(prev => prev + 1);
+
+            // Calculate next expected time
+            expectedTimeRef.current += delay;
+
+            // Calculate drift and set next timeout
+            // If we are behind (now > expectedTimeRef.current), this will be small or 0
+            const nextDelay = Math.max(0, expectedTimeRef.current - now);
+
+            timerRef.current = setTimeout(tick, nextDelay);
+        };
+
+        timerRef.current = setTimeout(tick, delay);
+
+        return () => {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
+        };
+    }, [isPlaying, isPaused, isComplete, getDelay, totalItems]);
 
     // Actions
     const start = useCallback(() => {
@@ -138,7 +185,25 @@ export const useReadingEngine = (config: ReadingEngineConfig): ReadingEngine => 
         // Reset position when changing modes
         setCurrentIndex(0);
         setIsComplete(false);
+        setElapsedTime(0); // Reset timer on mode change
     }, []);
+
+    const undo = useCallback(() => {
+        if (currentIndex > 0) {
+            setCurrentIndex(prev => prev - 1);
+        }
+    }, [currentIndex]);
+
+    // Elapsed time timer (1s interval)
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isPlaying && !isPaused && !isComplete) {
+            interval = setInterval(() => {
+                setElapsedTime(prev => prev + 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [isPlaying, isPaused, isComplete]);
 
     return {
         // State
@@ -155,6 +220,8 @@ export const useReadingEngine = (config: ReadingEngineConfig): ReadingEngine => 
         // Mode-specific data
         currentWord,
         currentChunk,
+        previousChunk,
+        nextChunk,
         bionicText: bionicWords,
 
         // Actions
@@ -167,5 +234,8 @@ export const useReadingEngine = (config: ReadingEngineConfig): ReadingEngine => 
         speedUp,
         slowDown,
         setMode,
+        setCurrentIndex,
+        undo,
+        elapsedTime, // Exposed for UI
     };
 };

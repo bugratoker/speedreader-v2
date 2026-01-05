@@ -6,10 +6,12 @@ import { View, ActivityIndicator, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_700Bold } from '@expo-google-fonts/inter';
 import { PlayfairDisplay_400Regular, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
+import { Merriweather_400Regular, Merriweather_700Bold } from '@expo-google-fonts/merriweather';
+import { AtkinsonHyperlegible_400Regular, AtkinsonHyperlegible_700Bold } from '@expo-google-fonts/atkinson-hyperlegible';
 import { AppProvider } from './src/store';
 import { ThemeProvider, colors } from './src/theme';
 import { RootNavigator } from './src/navigation';
-import { ThemedStatusBar } from './src/components/ThemedStatusBar';
+import { ThemedStatusBar } from './src/components';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -18,6 +20,10 @@ export default function App() {
     Inter_700Bold,
     PlayfairDisplay_400Regular,
     PlayfairDisplay_700Bold,
+    Merriweather_400Regular,
+    Merriweather_700Bold,
+    AtkinsonHyperlegible_400Regular,
+    AtkinsonHyperlegible_700Bold,
   });
 
   // Show loading screen while fonts load

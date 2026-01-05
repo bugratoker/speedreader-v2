@@ -10,7 +10,8 @@
         "seconds": "seconds",
         "minute": "minute",
         "skip": "Skip",
-        "done": "Done"
+        "done": "Done",
+        "undo": "Undo"
     },
     "welcome": {
         "slide1": {
@@ -81,11 +82,48 @@
     },
     "library": {
         "title": "Library",
-        "subtitle": "Your books and news feed"
+        "subtitle": "Your books and news feed",
+        "categories": {
+            "all": "All",
+            "continue": "Continue Reading",
+            "recent": "Recent",
+            "recommended": "Recommended"
+        },
+        "words": "words",
+        "remaining": "left",
+        "continue": "Continue",
+        "start": "Start Reading",
+        "empty": "No books in this category"
     },
     "read": {
         "title": "Speed Reader",
-        "modes": "RSVP • Bionic • Chunking"
+        "modes": "RSVP • Bionic • Chunking",
+        "settings": {
+            "title": "Reading Settings",
+            "general": "General",
+            "appearance": "Appearance",
+            "ai": "AI Features",
+            "autoImage": "Auto Image Generation",
+            "autoImageDesc": "Generate AI images every 300 words",
+            "autoQuestion": "Auto Question Mode",
+            "autoQuestionDesc": "Test comprehension after reading",
+            "smartCountdown": "Smart Countdown",
+            "smartCountdownDesc": "Show 3-2-1 before starting",
+            "hapticFeedback": "Haptic Feedback",
+            "hapticFeedbackDesc": "Vibrate on interactions",
+            "readingSounds": "Reading Sounds",
+            "readingSoundsDesc": "Play sound effects",
+            "peripheralHighlight": "Peripheral Highlighting",
+            "peripheralHighlightDesc": "Enhanced visual guides",
+            "textSize": "Text Size",
+            "textSizeDesc": "Adjust reading font size",
+            "fontSelection": "Text Font",
+            "chunkSettings": "Chunk Reading",
+            "chunkSize": "Chunk Size",
+            "chunkSizeDesc": "Words per chunk (2-5)",
+            "smartChunking": "Smart Phrase Chunking",
+            "smartChunkingDesc": "Group words by natural phrases"
+        }
     },
     "training": {
         "title": "Training Lab",

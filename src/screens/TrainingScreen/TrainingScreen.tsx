@@ -1,13 +1,16 @@
 /**
  * Training Screen - Hub for Eye Exercises and Focus Drills
- * Neuro-Ocular Conditioning Lab - Simplified UI
+ * Redesigned with modern UI/UX (v2)
  */
 
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, PanResponder, Dimensions, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import Animated, { FadeIn, FadeInDown, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, FadeInUp, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainTabParamList } from '../../navigation';
 import { useTheme } from '../../theme';
 import { PremiumButton } from '../../components/ui/PremiumButton';
 import {
@@ -21,6 +24,7 @@ import {
     Play,
     Info,
     ExternalLink,
+    Trophy,
 } from 'lucide-react-native';
 import {
     SchulteTable,
@@ -29,7 +33,7 @@ import {
     PeripheralCatch
 } from '../../components';
 
-type ExerciseType = 'schulte' | 'saccadic' | 'eyestretch' | 'peripheral' | null;
+type ExerciseType = 'schulte' | 'saccadic' | 'eyestretch' | 'peripheral' | 'comprehension' | null;
 type ScreenState = 'hub' | 'detail' | 'active';
 
 interface ExerciseData {
@@ -47,83 +51,95 @@ interface ExerciseData {
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_GAP = 12;
-const CARD_SIZE = (SCREEN_WIDTH - 48 - CARD_GAP) / 2;
+const CARD_GAP = 10;
+const CARD_SIZE = (SCREEN_WIDTH - 32 - CARD_GAP) / 2;
 
-
-// Minimal Grid Card Component
-const MinimalCard: React.FC<{
+// Enhanced Exercise Card Component
+const ExerciseCard: React.FC<{
     title: string;
+    subtitle: string;
     icon: React.ReactNode;
     difficulty: string;
     accentColor: string;
     glowColor: string;
     onPress: () => void;
     index: number;
-}> = ({ title, icon, difficulty, accentColor, glowColor, onPress, index }) => {
+}> = ({ title, subtitle, icon, difficulty, accentColor, glowColor, onPress, index }) => {
     const { colors, spacing, fontFamily, fontSize, borderRadius } = useTheme();
     const scale = useSharedValue(1);
+    const opacity = useSharedValue(1);
 
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ scale: scale.value }],
+        opacity: opacity.value,
     }));
 
-    const getDifficultyColor = () => {
+    const getDifficultyInfo = () => {
         switch (difficulty) {
-            case 'warmUp': return colors.success;
-            case 'training': return colors.primary;
-            case 'challenge': return colors.secondary;
-            default: return colors.primary;
+            case 'warmUp':
+                return { label: 'Warm Up', color: colors.success || '#10b981' };
+            case 'training':
+                return { label: 'Training', color: colors.primary };
+            case 'challenge':
+                return { label: 'Challenge', color: colors.secondary };
+            default:
+                return { label: 'Training', color: colors.primary };
         }
     };
 
+    const difficultyInfo = getDifficultyInfo();
+
     return (
-        <Animated.View
-            entering={FadeInUp.delay(index * 80).springify()}
-        >
+        <Animated.View entering={FadeIn.delay(index * 60).duration(400)}>
             <Animated.View style={animatedStyle}>
                 <Pressable
-                    onPressIn={() => { scale.value = withSpring(0.95); }}
-                    onPressOut={() => { scale.value = withSpring(1); }}
+                    onPressIn={() => {
+                        scale.value = withTiming(0.96, { duration: 100 });
+                        opacity.value = withTiming(0.8, { duration: 100 });
+                    }}
+                    onPressOut={() => {
+                        scale.value = withSpring(1);
+                        opacity.value = withTiming(1, { duration: 100 });
+                    }}
                     onPress={onPress}
                     style={{
                         width: CARD_SIZE,
-                        height: CARD_SIZE,
+                        height: CARD_SIZE * 1.1,
                         backgroundColor: colors.surface,
-                        borderRadius: borderRadius.bento,
+                        borderRadius: borderRadius.lg,
                         borderWidth: 1,
                         borderColor: colors.glassBorder,
-                        padding: spacing.md,
+                        padding: spacing.sm,
                         justifyContent: 'space-between',
                         shadowColor: accentColor,
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.15,
-                        shadowRadius: 12,
-                        elevation: 4,
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 8,
+                        elevation: 3,
                         overflow: 'hidden',
                     }}
                 >
-                    {/* Glow Background */}
+                    {/* Subtle Glow Background */}
                     <View
                         style={{
                             position: 'absolute',
-                            top: -30,
-                            right: -30,
-                            width: 100,
-                            height: 100,
-                            borderRadius: 50,
+                            top: -40,
+                            right: -40,
+                            width: 80,
+                            height: 80,
+                            borderRadius: 40,
                             backgroundColor: glowColor,
-                            opacity: 0.5,
+                            opacity: 0.3,
                         }}
                     />
 
-                    {/* Icon */}
+                    {/* Icon Container */}
                     <View
                         style={{
-                            width: 56,
-                            height: 56,
-                            borderRadius: 28,
-                            backgroundColor: glowColor,
+                            width: 44,
+                            height: 44,
+                            borderRadius: borderRadius.md,
+                            backgroundColor: glowColor + 'CC',
                             justifyContent: 'center',
                             alignItems: 'center',
                         }}
@@ -131,36 +147,61 @@ const MinimalCard: React.FC<{
                         {icon}
                     </View>
 
-                    {/* Bottom Content */}
-                    <View>
+                    {/* Content */}
+                    <View style={{ gap: spacing.xs - 2 }}>
                         <Text
                             style={{
                                 fontFamily: fontFamily.uiBold,
                                 fontSize: fontSize.md,
                                 color: colors.text,
-                                marginBottom: 4,
+                                lineHeight: fontSize.md * 1.2,
                             }}
-                            numberOfLines={1}
+                            numberOfLines={2}
                         >
                             {title}
                         </Text>
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiRegular,
+                                fontSize: fontSize.xs,
+                                color: colors.textMuted,
+                                lineHeight: fontSize.xs * 1.4,
+                            }}
+                            numberOfLines={2}
+                        >
+                            {subtitle}
+                        </Text>
+
+                        {/* Difficulty Badge */}
                         <View
                             style={{
-                                backgroundColor: getDifficultyColor() + '20',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                backgroundColor: difficultyInfo.color + '15',
                                 paddingHorizontal: spacing.sm,
-                                paddingVertical: 2,
+                                paddingVertical: spacing.xs - 2,
                                 borderRadius: borderRadius.sm,
                                 alignSelf: 'flex-start',
+                                marginTop: spacing.xs - 2,
                             }}
                         >
+                            <View
+                                style={{
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: 3,
+                                    backgroundColor: difficultyInfo.color,
+                                    marginRight: spacing.xs,
+                                }}
+                            />
                             <Text
                                 style={{
                                     fontFamily: fontFamily.uiMedium,
-                                    fontSize: fontSize.xs,
-                                    color: getDifficultyColor(),
+                                    fontSize: fontSize.xs - 1,
+                                    color: difficultyInfo.color,
                                 }}
                             >
-                                {difficulty === 'warmUp' ? 'Isınma' : difficulty === 'training' ? ' Antrenman' : ' Meydan Okuma'}
+                                {difficultyInfo.label}
                             </Text>
                         </View>
                     </View>
@@ -185,7 +226,7 @@ export const TrainingScreen: React.FC = () => {
             descriptionKey: 'training.exercises.eyestretch.description',
             academicKey: 'training.exercises.eyestretch.academicBasis',
             subtitleKey: 'training.exercises.eyestretch.subtitle',
-            icon: <Infinity size={28} color={colors.secondary} strokeWidth={1.5} />,
+            icon: <Infinity size={24} color={colors.secondary} strokeWidth={2} />,
             accentColor: colors.secondary,
             glowColor: colors.secondaryGlow,
             difficulty: 'warmUp',
@@ -198,7 +239,7 @@ export const TrainingScreen: React.FC = () => {
             academicDetailKey: 'games.academic.schulte.description',
             academicUrl: 'https://pubmed.ncbi.nlm.nih.gov/8323726/',
             subtitleKey: 'training.exercises.schulte.subtitle',
-            icon: <Grid3X3 size={28} color={colors.primary} strokeWidth={1.5} />,
+            icon: <Grid3X3 size={24} color={colors.primary} strokeWidth={2} />,
             accentColor: colors.primary,
             glowColor: colors.primaryGlow,
             difficulty: 'training',
@@ -211,7 +252,7 @@ export const TrainingScreen: React.FC = () => {
             academicDetailKey: 'games.academic.saccadic.description',
             academicUrl: 'https://pubmed.ncbi.nlm.nih.gov/9820029/',
             subtitleKey: 'training.exercises.saccadic.subtitle',
-            icon: <Zap size={28} color={colors.secondary} strokeWidth={1.5} />,
+            icon: <Zap size={24} color={colors.secondary} strokeWidth={2} />,
             accentColor: colors.secondary,
             glowColor: colors.secondaryGlow,
             difficulty: 'training',
@@ -222,9 +263,21 @@ export const TrainingScreen: React.FC = () => {
             descriptionKey: 'training.exercises.peripheral.description',
             academicKey: 'training.exercises.peripheral.academicBasis',
             subtitleKey: 'training.exercises.peripheral.subtitle',
-            icon: <Focus size={28} color={colors.primary} strokeWidth={1.5} />,
+            icon: <Focus size={24} color={colors.primary} strokeWidth={2} />,
             accentColor: colors.primary,
             glowColor: colors.primaryGlow,
+            difficulty: 'challenge',
+        },
+        {
+            key: 'comprehension',
+            titleKey: 'training.exercises.comprehension.title',
+            descriptionKey: 'training.exercises.comprehension.description',
+            academicKey: 'training.exercises.comprehension.academicBasis',
+            academicDetailKey: 'games.academic.comprehension.description',
+            subtitleKey: 'training.exercises.comprehension.subtitle',
+            icon: <Play size={24} color={colors.secondary} strokeWidth={2} />,
+            accentColor: colors.secondary,
+            glowColor: colors.secondaryGlow,
             difficulty: 'challenge',
         },
     ];
@@ -249,7 +302,8 @@ export const TrainingScreen: React.FC = () => {
             onPanResponderRelease: (_evt, gestureState) => {
                 if (gestureState.dx > 50 && Math.abs(gestureState.vy) > 0.3) {
                     if (screenState === 'active') {
-                        setScreenState('detail');
+                        setScreenState('hub');
+                        setActiveExercise(null);
                     } else {
                         setScreenState('hub');
                         setActiveExercise(null);
@@ -260,9 +314,20 @@ export const TrainingScreen: React.FC = () => {
         })
     ).current;
 
+    const { navigate } = useNavigation<NativeStackNavigationProp<MainTabParamList>>();
+
     const openAcademicUrl = (url?: string) => {
         if (url) {
             Linking.openURL(url);
+        }
+    };
+
+    // Handle starting an exercise
+    const handleStartExercise = () => {
+        if (activeExercise === 'comprehension') {
+            navigate('Read', { comprehensionMode: true });
+        } else {
+            setScreenState('active');
         }
     };
 
@@ -282,7 +347,10 @@ export const TrainingScreen: React.FC = () => {
                     zIndex: 10
                 }}>
                     <Pressable
-                        onPress={() => setScreenState('detail')}
+                        onPress={() => {
+                            setScreenState('hub');
+                            setActiveExercise(null);
+                        }}
                         style={({ pressed }) => ({
                             width: 44,
                             height: 44,
@@ -369,333 +437,175 @@ export const TrainingScreen: React.FC = () => {
         );
     }
 
-    // Detail View - Shows exercise info before starting
-    if (screenState === 'detail' && activeExercise && currentExercise) {
-        return (
-            <View
-                style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}
-                {...panResponder.panHandlers}
+
+
+    // Hub View - 2x2 Grid
+    return (
+        <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
+            <ScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: 120 }}
+                showsVerticalScrollIndicator={false}
             >
                 {/* Header */}
-                <View style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    paddingHorizontal: spacing.md,
-                    paddingVertical: spacing.sm,
-                }}>
-                    <Pressable
-                        onPress={() => {
-                            setScreenState('hub');
-                            setActiveExercise(null);
-                            setShowAcademic(false);
-                        }}
-                        style={({ pressed }) => ({
-                            width: 44,
-                            height: 44,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            borderRadius: 22,
-                            backgroundColor: pressed ? colors.surfaceElevated : 'transparent',
-                        })}
-                    >
-                        <ChevronLeft size={28} color={colors.primary} strokeWidth={2.5} />
-                    </Pressable>
-                </View>
-
-                <ScrollView
-                    style={{ flex: 1 }}
-                    contentContainerStyle={{ padding: spacing.lg, paddingBottom: insets.bottom + 40 }}
-                    showsVerticalScrollIndicator={false}
-                >
-                    {/* Exercise Hero */}
-                    <Animated.View entering={FadeInDown.delay(100).springify()} style={{ alignItems: 'center', marginBottom: spacing.lg }}>
+                <View style={{ paddingTop: spacing.md, paddingBottom: spacing.sm }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.xs }}>
                         <View
                             style={{
-                                width: 80,
-                                height: 80,
-                                borderRadius: 40,
-                                backgroundColor: currentExercise.glowColor,
+                                width: 36,
+                                height: 36,
+                                borderRadius: borderRadius.md,
+                                backgroundColor: colors.secondaryGlow,
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                marginBottom: spacing.md,
-                                shadowColor: currentExercise.accentColor,
-                                shadowOffset: { width: 0, height: 6 },
-                                shadowOpacity: 0.3,
-                                shadowRadius: 12,
+                                marginRight: spacing.sm,
                             }}
                         >
-                            {currentExercise.icon}
+                            <Trophy size={20} color={colors.secondary} strokeWidth={2} />
                         </View>
                         <Text style={{
                             fontFamily: fontFamily.uiBold,
                             fontSize: fontSize['2xl'],
                             color: colors.text,
-                            textAlign: 'center',
                         }}>
-                            {t(currentExercise.titleKey)}
-                        </Text>
-                        <Text style={{
-                            fontFamily: fontFamily.uiRegular,
-                            fontSize: fontSize.sm,
-                            color: colors.textMuted,
-                            textAlign: 'center',
-                            marginTop: spacing.xs,
-                        }}>
-                            {t(currentExercise.subtitleKey)}
-                        </Text>
-                    </Animated.View>
-
-                    {/* Description Card */}
-                    <Animated.View entering={FadeInDown.delay(200).springify()}>
-                        <View
-                            style={{
-                                backgroundColor: colors.surface,
-                                borderRadius: borderRadius.bento,
-                                borderWidth: 1,
-                                borderColor: colors.glassBorder,
-                                padding: spacing.md,
-                                marginBottom: spacing.md,
-                            }}
-                        >
-                            <Text style={{
-                                fontFamily: fontFamily.uiMedium,
-                                fontSize: fontSize.sm,
-                                color: currentExercise.accentColor,
-                                marginBottom: spacing.sm,
-                            }}>
-                                {t('common.howItWorks', { defaultValue: 'Nasıl Çalışır?' })}
-                            </Text>
-                            <Text style={{
-                                fontFamily: fontFamily.uiRegular,
-                                fontSize: fontSize.md,
-                                color: colors.text,
-                                lineHeight: fontSize.md * 1.5,
-                            }}>
-                                {t(currentExercise.descriptionKey)}
-                            </Text>
-                        </View>
-                    </Animated.View>
-
-                    {/* Academic Basis - Collapsible */}
-                    <Animated.View entering={FadeInDown.delay(300).springify()}>
-                        <Pressable
-                            onPress={() => setShowAcademic(!showAcademic)}
-                            style={{
-                                backgroundColor: colors.surface,
-                                borderRadius: borderRadius.bento,
-                                borderWidth: 1,
-                                borderColor: colors.glassBorder,
-                                padding: spacing.md,
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                            }}
-                        >
-                            <View
-                                style={{
-                                    width: 36,
-                                    height: 36,
-                                    borderRadius: 18,
-                                    backgroundColor: currentExercise.glowColor,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    marginRight: spacing.sm,
-                                }}
-                            >
-                                <Info size={18} color={currentExercise.accentColor} strokeWidth={2} />
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <Text style={{
-                                    fontFamily: fontFamily.uiMedium,
-                                    fontSize: fontSize.sm,
-                                    color: colors.text,
-                                }}>
-                                    {t('common.scientificBasis', { defaultValue: 'Bilimsel Temel' })}
-                                </Text>
-                                <Text style={{
-                                    fontFamily: fontFamily.uiRegular,
-                                    fontSize: fontSize.xs,
-                                    color: colors.textMuted,
-                                }}>
-                                    {showAcademic ? t('common.tapToHide', { defaultValue: 'Gizlemek için dokun' }) : t('common.tapForMore', { defaultValue: 'Daha fazla bilgi için dokun' })}
-                                </Text>
-                            </View>
-                        </Pressable>
-
-                        {showAcademic && (
-                            <Animated.View
-                                entering={FadeIn.duration(200)}
-                                style={{
-                                    backgroundColor: colors.surfaceElevated,
-                                    borderRadius: borderRadius.md,
-                                    padding: spacing.md,
-                                    marginTop: spacing.sm,
-                                }}
-                            >
-                                <Text style={{
-                                    fontFamily: fontFamily.uiRegular,
-                                    fontSize: fontSize.sm,
-                                    color: colors.text,
-                                    lineHeight: fontSize.sm * 1.5,
-                                    marginBottom: currentExercise.academicDetailKey ? spacing.sm : 0,
-                                }}>
-                                    {currentExercise.academicDetailKey
-                                        ? t(currentExercise.academicDetailKey)
-                                        : t(currentExercise.academicKey)}
-                                </Text>
-
-                                {currentExercise.academicUrl && (
-                                    <Pressable
-                                        onPress={() => openAcademicUrl(currentExercise.academicUrl)}
-                                        style={({ pressed }) => ({
-                                            flexDirection: 'row',
-                                            alignItems: 'center',
-                                            paddingVertical: spacing.sm,
-                                            paddingHorizontal: spacing.md,
-                                            backgroundColor: pressed ? currentExercise.accentColor + '20' : currentExercise.glowColor,
-                                            borderRadius: borderRadius.md,
-                                            marginTop: spacing.sm,
-                                            alignSelf: 'flex-start',
-                                        })}
-                                    >
-                                        <ExternalLink size={16} color={currentExercise.accentColor} strokeWidth={2} />
-                                        <Text style={{
-                                            fontFamily: fontFamily.uiMedium,
-                                            fontSize: fontSize.sm,
-                                            color: currentExercise.accentColor,
-                                            marginLeft: spacing.xs,
-                                        }}>
-                                            {t('games.academic.learnMore', { defaultValue: 'Makaleyi Görüntüle' })}
-                                        </Text>
-                                    </Pressable>
-                                )}
-                            </Animated.View>
-                        )}
-                    </Animated.View>
-
-                    {/* Start Button - Now inside ScrollView */}
-                    <Animated.View
-                        entering={FadeInUp.delay(400).springify()}
-                        style={{ marginTop: spacing.xl }}
-                    >
-                        <View style={{ alignItems: 'center' }}>
-                            <PremiumButton
-                                title={t('games.common.start', { defaultValue: 'Antrenmana Başla' })}
-                                onPress={() => setScreenState('active')}
-                                icon={Play}
-                                variant="primary"
-                                size="xl"
-                                fullWidth
-                                animatePulse
-                                customColor={currentExercise.accentColor}
-                            />
-                        </View>
-                    </Animated.View>
-                </ScrollView>
-            </View>
-        );
-    }
-
-    // Hub View - 2x2 Grid
-    return (
-        <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
-            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: spacing.md, paddingBottom: 120 }}>
-                {/* Header */}
-                <Animated.View entering={FadeInDown.delay(50).springify()} style={{ paddingVertical: spacing.lg }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Dumbbell size={28} color={colors.secondary} strokeWidth={1.5} />
-                        <Text style={{ fontFamily: fontFamily.uiBold, fontSize: fontSize['3xl'], color: colors.text, marginLeft: spacing.sm }}>
                             {t('training.title')}
                         </Text>
                     </View>
-                    <Text style={{ fontFamily: fontFamily.uiRegular, fontSize: fontSize.md, color: colors.textMuted, marginTop: spacing.xs }}>
+                    <Text style={{
+                        fontFamily: fontFamily.uiRegular,
+                        fontSize: fontSize.sm,
+                        color: colors.textMuted,
+                        marginLeft: 44,
+                    }}>
                         {t('training.subtitle')}
                     </Text>
-                </Animated.View>
+                </View>
 
-                {/* 2x2 Grid */}
-                <View style={{ marginTop: spacing.md }}>
+                {/* Exercise Grid */}
+                <View style={{ marginTop: spacing.sm, gap: CARD_GAP }}>
                     {/* Row 1 */}
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: CARD_GAP }}>
-                        <MinimalCard
+                    <View style={{ flexDirection: 'row', gap: CARD_GAP }}>
+                        <ExerciseCard
                             title={t(exercises[0].titleKey)}
+                            subtitle={t(exercises[0].subtitleKey)}
                             icon={exercises[0].icon}
                             difficulty={exercises[0].difficulty}
                             accentColor={exercises[0].accentColor}
                             glowColor={exercises[0].glowColor}
                             onPress={() => {
                                 setActiveExercise(exercises[0].key);
-                                setScreenState('detail');
+                                setScreenState('active');
                             }}
                             index={0}
                         />
-                        <MinimalCard
+                        <ExerciseCard
                             title={t(exercises[1].titleKey)}
+                            subtitle={t(exercises[1].subtitleKey)}
                             icon={exercises[1].icon}
                             difficulty={exercises[1].difficulty}
                             accentColor={exercises[1].accentColor}
                             glowColor={exercises[1].glowColor}
                             onPress={() => {
                                 setActiveExercise(exercises[1].key);
-                                setScreenState('detail');
+                                setScreenState('active');
                             }}
                             index={1}
                         />
                     </View>
 
                     {/* Row 2 */}
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <MinimalCard
+                    <View style={{ flexDirection: 'row', gap: CARD_GAP }}>
+                        <ExerciseCard
                             title={t(exercises[2].titleKey)}
+                            subtitle={t(exercises[2].subtitleKey)}
                             icon={exercises[2].icon}
                             difficulty={exercises[2].difficulty}
                             accentColor={exercises[2].accentColor}
                             glowColor={exercises[2].glowColor}
                             onPress={() => {
                                 setActiveExercise(exercises[2].key);
-                                setScreenState('detail');
+                                setScreenState('active');
                             }}
                             index={2}
                         />
-                        <MinimalCard
+                        <ExerciseCard
                             title={t(exercises[3].titleKey)}
+                            subtitle={t(exercises[3].subtitleKey)}
                             icon={exercises[3].icon}
                             difficulty={exercises[3].difficulty}
                             accentColor={exercises[3].accentColor}
                             glowColor={exercises[3].glowColor}
                             onPress={() => {
                                 setActiveExercise(exercises[3].key);
-                                setScreenState('detail');
+                                setScreenState('active');
                             }}
                             index={3}
                         />
                     </View>
+
+                    {/* Row 3 - Comprehension */}
+                    <View style={{ flexDirection: 'row', gap: CARD_GAP }}>
+                        <ExerciseCard
+                            title={t(exercises[4].titleKey)}
+                            subtitle={t(exercises[4].subtitleKey)}
+                            icon={exercises[4].icon}
+                            difficulty={exercises[4].difficulty}
+                            accentColor={exercises[4].accentColor}
+                            glowColor={exercises[4].glowColor}
+                            onPress={() => {
+                                navigate('Read', { comprehensionMode: true });
+                            }}
+                            index={4}
+                        />
+                        {/* Empty spacer to keep grid alignment if needed, or just one card takes half width */}
+                        <View style={{ width: CARD_SIZE }} /> 
+                    </View>
                 </View>
 
-                {/* Quick Tip */}
-                <Animated.View
-                    entering={FadeInUp.delay(400).springify()}
+                {/* Training Tip Card */}
+                <View
                     style={{
-                        marginTop: spacing.xl,
+                        marginTop: spacing.lg,
                         backgroundColor: colors.surface,
-                        borderRadius: borderRadius.bento,
+                        borderRadius: borderRadius.lg,
                         borderWidth: 1,
                         borderColor: colors.glassBorder,
                         padding: spacing.md,
-                        flexDirection: 'row',
-                        alignItems: 'center',
                     }}
                 >
-                    <Eye size={20} color={colors.secondary} strokeWidth={2} />
-                    <Text style={{
-                        fontFamily: fontFamily.uiRegular,
-                        fontSize: fontSize.sm,
-                        color: colors.textMuted,
-                        marginLeft: spacing.sm,
-                        flex: 1,
-                    }}>
-                        {t('training.tip', { defaultValue: 'Günde 5-10 dakika antrenman, 2 hafta içinde fark yaratır!' })}
-                    </Text>
-                </Animated.View>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm }}>
+                        <View
+                            style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: borderRadius.sm,
+                                backgroundColor: colors.secondaryGlow,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Eye size={16} color={colors.secondary} strokeWidth={2} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{
+                                fontFamily: fontFamily.uiMedium,
+                                fontSize: fontSize.sm,
+                                color: colors.text,
+                                marginBottom: spacing.xs - 2,
+                            }}>
+                                Daily Training Tip
+                            </Text>
+                            <Text style={{
+                                fontFamily: fontFamily.uiRegular,
+                                fontSize: fontSize.sm,
+                                color: colors.textMuted,
+                                lineHeight: fontSize.sm * 1.5,
+                            }}>
+                                {t('training.tip', { defaultValue: '5-10 minutes daily for 2 weeks shows measurable improvement' })}
+                            </Text>
+                        </View>
+                    </View>
+                </View>
             </ScrollView>
         </View>
     );

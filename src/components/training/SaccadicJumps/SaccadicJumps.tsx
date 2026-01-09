@@ -13,13 +13,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Pressable, Dimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { PremiumButton } from '../../ui/PremiumButton';
+import { TrainingStartButton } from '../common/TrainingStartButton';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withTiming,
     withSequence,
     FadeIn,
+    ZoomIn,
 } from 'react-native-reanimated';
 import { useTheme } from '@theme';
 import {
@@ -314,65 +315,170 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
     };
 
     return (
-        <View style={{ alignItems: 'center' }}>
-            {/* Instructions */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md, paddingHorizontal: spacing.md }}>
-                <BookOpen size={18} color={colors.secondary} strokeWidth={2} />
-                <Text
+        <View style={{ alignItems: 'center', flex: 1, width: '100%' }}>
+            {gameState === 'idle' ? (
+                // Welcome Overlay
+                <Animated.View
+                    entering={FadeIn.duration(300).springify()}
                     style={{
-                        fontFamily: fontFamily.uiRegular,
-                        fontSize: fontSize.sm,
-                        color: colors.textMuted,
-                        marginLeft: spacing.sm,
                         flex: 1,
+                        width: '100%',
+                        backgroundColor: colors.surface + 'F8',
+                        padding: spacing.lg,
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                     }}
                 >
-                    Follow the red dot - eyes move naturally at rhythm
-                </Text>
-                <InfoButton onPress={() => setShowAcademicModal(true)} size={24} />
-            </View>
+                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                        <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'flex-end', marginBottom: -20, zIndex: 10 }}>
+                            <InfoButton onPress={() => setShowAcademicModal(true)} size={28} />
+                        </View>
 
-            {/* Reading Area */}
-            <View
-                style={{
-                    width: areaWidth,
-                    height: areaHeight,
-                    backgroundColor: colors.surfaceElevated,
-                    borderRadius: borderRadius.bento,
-                    borderWidth: 1,
-                    borderColor: colors.glassBorder,
-                    position: 'relative',
-                    overflow: 'hidden',
-                }}
-            >
-                {/* Idle State */}
-                {gameState === 'idle' && (
-                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg }}>
-                        <BookOpen size={48} color={colors.secondary} strokeWidth={1.5} />
+                        {/* Icon with glow */}
+                        <Animated.View
+                            entering={ZoomIn.delay(100).springify()}
+                            style={{
+                                width: 72,
+                                height: 72,
+                                borderRadius: 36,
+                                backgroundColor: colors.secondary + '15',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginBottom: spacing.lg,
+                                shadowColor: colors.secondary,
+                                shadowOpacity: 0.3,
+                                shadowRadius: 20,
+                                elevation: 8,
+                            }}
+                        >
+                            <BookOpen size={36} color={colors.secondary} strokeWidth={2} />
+                        </Animated.View>
+
+                        {/* Title */}
                         <Text
                             style={{
-                                fontFamily: fontFamily.uiMedium,
-                                fontSize: fontSize.md,
+                                fontFamily: fontFamily.uiBold,
+                                fontSize: fontSize.xl,
                                 color: colors.text,
-                                marginTop: spacing.md,
+                                marginBottom: spacing.sm,
+                                letterSpacing: 0.5,
                                 textAlign: 'center',
                             }}
                         >
                             Rhythm-Guided Reading
                         </Text>
+
+                        {/* Instructions */}
                         <Text
                             style={{
                                 fontFamily: fontFamily.uiRegular,
                                 fontSize: fontSize.sm,
                                 color: colors.textMuted,
-                                marginTop: spacing.xs,
                                 textAlign: 'center',
+                                lineHeight: 22,
+                                marginBottom: spacing.xl,
+                                paddingHorizontal: spacing.md,
                             }}
                         >
-                            Follow the red dot naturally, then answer questions
+                            {t('games.saccadic.welcome.instructions')}
                         </Text>
+
+                        {/* Difficulty Selector */}
+                        <View style={{ width: '100%', maxWidth: 400, marginBottom: spacing.xl }}>
+                            <Text
+                                style={{
+                                    fontFamily: fontFamily.uiMedium,
+                                    fontSize: fontSize.xs,
+                                    color: colors.textMuted,
+                                    marginBottom: spacing.md,
+                                    textAlign: 'center',
+                                }}
+                            >
+                                Select Speed
+                            </Text>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+                                {(Object.keys(DIFFICULTY_CONFIG) as DifficultyLevel[]).map((level) => (
+                                    <Pressable
+                                        key={level}
+                                        onPress={() => setDifficulty(level)}
+                                        style={{
+                                            flex: 1,
+                                            minWidth: '47%',
+                                            paddingVertical: spacing.md,
+                                            borderRadius: borderRadius.md,
+                                            backgroundColor: difficulty === level ? colors.secondary : colors.surfaceElevated,
+                                            borderWidth: 1,
+                                            borderColor: difficulty === level ? colors.secondary : colors.glassBorder,
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontFamily: fontFamily.uiBold,
+                                                fontSize: fontSize.md,
+                                                color: difficulty === level ? colors.white : colors.text,
+                                            }}
+                                        >
+                                            {DIFFICULTY_CONFIG[level].description}
+                                        </Text>
+                                        <Text
+                                            style={{
+                                                fontFamily: fontFamily.uiRegular,
+                                                fontSize: fontSize.xs,
+                                                color: difficulty === level ? colors.white : colors.textMuted,
+                                                marginTop: 2,
+                                            }}
+                                        >
+                                            {t(`games.saccadic.difficulty.${level}`)}
+                                        </Text>
+                                    </Pressable>
+                                ))}
+                            </View>
+                        </View>
                     </View>
-                )}
+
+                    {/* Start Button */}
+                    <View style={{ width: '100%', maxWidth: 400 }}>
+                        <TrainingStartButton
+                            onPress={handleStart}
+                            title="Start Training"
+                            icon={Play}
+                        />
+                    </View>
+                </Animated.View>
+            ) : (
+                // Exercise View
+                <View style={{ alignItems: 'center', width: '100%' }}>
+                    {/* Instructions */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md, paddingHorizontal: spacing.md }}>
+                        <BookOpen size={18} color={colors.secondary} strokeWidth={2} />
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiRegular,
+                                fontSize: fontSize.sm,
+                                color: colors.text,
+                                marginLeft: spacing.sm,
+                                flex: 1,
+                            }}
+                        >
+                            Follow the red dot - eyes move naturally at rhythm
+                        </Text>
+                        <InfoButton onPress={() => setShowAcademicModal(true)} size={24} />
+                    </View>
+
+                    {/* Reading Area */}
+                    <View
+                        style={{
+                            width: areaWidth,
+                            height: areaHeight,
+                            backgroundColor: colors.surfaceElevated,
+                            borderRadius: borderRadius.bento,
+                            borderWidth: 1,
+                            borderColor: colors.glassBorder,
+                            position: 'relative',
+                            overflow: 'hidden',
+                        }}
+                    >
 
                 {/* Reading/Paused Phase */}
                 {(gameState === 'reading' || gameState === 'paused') && (
@@ -626,95 +732,25 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                 </View>
             )}
 
-            {/* Speed indicator during reading */}
-            {(gameState === 'reading' || gameState === 'paused') && (
-                <View style={{ marginTop: spacing.sm, alignItems: 'center' }}>
-                    <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.sm, color: colors.secondary }}>
-                        {config.wpm} WPM
-                    </Text>
-                </View>
-            )}
+                    {/* Speed indicator during reading */}
+                    {(gameState === 'reading' || gameState === 'paused') && (
+                        <View style={{ marginTop: spacing.sm, alignItems: 'center' }}>
+                            <Text style={{ fontFamily: fontFamily.uiMedium, fontSize: fontSize.sm, color: colors.secondary }}>
+                                {config.wpm} WPM
+                            </Text>
+                        </View>
+                    )}
 
-            {/* Difficulty Selector - COMPACT with STICKY Start */}
-            {gameState === 'idle' && (
-                <View style={{ marginTop: spacing.lg, width: areaWidth }}>
-                    <Text
-                        style={{
-                            fontFamily: fontFamily.uiMedium,
-                            fontSize: fontSize.sm,
-                            color: colors.textMuted,
-                            marginBottom: spacing.sm,
-                        }}
-                    >
-                        Select Speed
-                    </Text>
-
-                    {/* Compact 2x2 grid */}
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md }}>
-                        {(Object.keys(DIFFICULTY_CONFIG) as DifficultyLevel[]).map((level) => (
-                            <Pressable
-                                key={level}
-                                onPress={() => setDifficulty(level)}
-                                style={{
-                                    flex: 1,
-                                    minWidth: '47%',
-                                    paddingVertical: spacing.md,
-                                    borderRadius: borderRadius.md,
-                                    backgroundColor: difficulty === level ? colors.secondary : colors.surface,
-                                    borderWidth: 1,
-                                    borderColor: difficulty === level ? colors.secondary : colors.glassBorder,
-                                    alignItems: 'center',
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        fontFamily: fontFamily.uiBold,
-                                        fontSize: fontSize.md,
-                                        color: difficulty === level ? colors.white : colors.text,
-                                    }}
-                                >
-                                    {DIFFICULTY_CONFIG[level].description}
-                                </Text>
-                                <Text
-                                    style={{
-                                        fontFamily: fontFamily.uiRegular,
-                                        fontSize: fontSize.xs,
-                                        color: difficulty === level ? colors.white : colors.textMuted,
-                                        marginTop: 2,
-                                    }}
-                                >
-                                    {t(`games.saccadic.difficulty.${level}`)}
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-
-                    {/* Premium Start Button */}
-                    <View style={{ marginTop: spacing.xl }}>
-                        <PremiumButton
-                            title="Start Training"
-                            onPress={handleStart}
-                            icon={Play}
-                            variant="primary"
-                            size="xl"
-                            fullWidth
-                            animatePulse
-                        />
-                    </View>
-                </View>
-            )}
-
-            {/* Completed - Play Again */}
-            {gameState === 'completed' && (
-                <View style={{ marginTop: spacing.lg }}>
-                    <PremiumButton
-                        title={t('games.common.playAgain')}
-                        onPress={handleStart}
-                        icon={RotateCcw}
-                        variant="secondary"
-                        size="md"
-                        animatePulse
-                    />
+                    {/* Completed - Play Again */}
+                    {gameState === 'completed' && (
+                        <View style={{ marginTop: spacing.lg }}>
+                            <TrainingStartButton
+                                title={t('games.common.playAgain')}
+                                onPress={handleStart}
+                                icon={RotateCcw}
+                            />
+                        </View>
+                    )}
                 </View>
             )}
 
@@ -724,6 +760,7 @@ export const SaccadicJumps: React.FC<SaccadicJumpsProps> = ({ onComplete }) => {
                 onClose={() => setShowAcademicModal(false)}
                 title={t('games.academic.saccadic.title')}
                 description={t('games.academic.saccadic.description')}
+                researchLink="https://pubmed.ncbi.nlm.nih.gov/9820029/"
             />
         </View>
     );

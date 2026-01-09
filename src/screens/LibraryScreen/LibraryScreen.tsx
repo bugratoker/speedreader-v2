@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Search, SlidersHorizontal } from 'lucide-react-native';
@@ -7,83 +7,41 @@ import { useTheme } from '../../theme';
 import { LibraryTabs, type LibraryTabType } from '../../components/library/LibraryTabs';
 import { BookshelfView, type BookItem } from '../../components/library/BookshelfView';
 import { NewsFeed } from '../../components/library/NewsFeed';
-
-// Mock library data - will be moved to store later
-const MOCK_BOOKS: BookItem[] = [
-    {
-        id: '1',
-        title: 'Atomic Habits',
-        author: 'James Clear',
-        coverColor: '#667eea',
-        progress: 45,
-        totalWords: 89000,
-        currentWord: 40050,
-        lastRead: '2 hours ago',
-        category: 'continue',
-    },
-    {
-        id: '2',
-        title: 'Deep Work',
-        author: 'Cal Newport',
-        coverColor: '#f093fb',
-        progress: 78,
-        totalWords: 67000,
-        currentWord: 52260,
-        lastRead: 'Yesterday',
-        category: 'continue',
-    },
-    {
-        id: '3',
-        title: 'The Psychology of Money',
-        author: 'Morgan Housel',
-        coverColor: '#4facfe',
-        progress: 12,
-        totalWords: 54000,
-        currentWord: 6480,
-        lastRead: '3 days ago',
-        category: 'recent',
-    },
-    {
-        id: '4',
-        title: 'Thinking, Fast and Slow',
-        author: 'Daniel Kahneman',
-        coverColor: '#43e97b',
-        progress: 0,
-        totalWords: 175000,
-        currentWord: 0,
-        category: 'recommended',
-    },
-    {
-        id: '5',
-        title: 'Range: Why Generalists Triumph',
-        author: 'David Epstein',
-        coverColor: '#fa709a',
-        progress: 0,
-        totalWords: 98000,
-        currentWord: 0,
-        category: 'recommended',
-    },
-    {
-        id: '6',
-        title: 'The Power of Now',
-        author: 'Eckhart Tolle',
-        coverColor: '#fee140',
-        progress: 0,
-        totalWords: 71000,
-        currentWord: 0,
-        category: 'recommended',
-    },
-];
+import { ImportModal } from '../../components/library/ImportModal';
+import { useLibrary } from '../../hooks/useLibrary';
 
 export const LibraryScreen: React.FC = () => {
     const { t } = useTranslation();
     const { colors, spacing, fontFamily, fontSize } = useTheme();
     const insets = useSafeAreaInsets();
     const [activeTab, setActiveTab] = useState<LibraryTabType>('bookshelf');
+    const [isImportModalVisible, setIsImportModalVisible] = useState(false);
+    
+    const { books, isLoading, refreshBooks } = useLibrary();
+
+    // Transform imported books to BookItem format for BookshelfView
+    const bookItems: BookItem[] = useMemo(() => {
+        return books.map(book => ({
+            id: book.id,
+            title: book.title,
+            author: book.author || 'Unknown Author',
+            coverColor: book.coverColor,
+            progress: book.currentPosition.percentage,
+            totalWords: book.totalWords,
+            currentWord: book.currentPosition.chunkIndex * 10000 + book.currentPosition.wordIndex,
+            lastRead: book.lastReadAt 
+                ? formatRelativeTime(book.lastReadAt)
+                : formatRelativeTime(book.importedAt),
+            category: book.currentPosition.percentage > 0 ? 'continue' : 'recent',
+        }));
+    }, [books]);
 
     const handleImportPress = () => {
-        // TODO: Open import modal
-        console.log('Import pressed');
+        setIsImportModalVisible(true);
+    };
+
+    const handleImportComplete = () => {
+        refreshBooks();
     };
 
     return (
@@ -125,7 +83,9 @@ export const LibraryScreen: React.FC = () => {
                             },
                         ]}
                     >
-                        {activeTab === 'bookshelf' ? t('library.subtitle') : 'Curated content for speed reading'}
+                        {activeTab === 'bookshelf' 
+                            ? `${books.length} ${books.length === 1 ? 'book' : 'books'} in your library`
+                            : 'Curated content for speed reading'}
                     </Text>
                 </View>
                 <View style={styles.headerActions}>
@@ -143,13 +103,43 @@ export const LibraryScreen: React.FC = () => {
 
             {/* Tab Content */}
             {activeTab === 'bookshelf' ? (
-                <BookshelfView books={MOCK_BOOKS} onImportPress={handleImportPress} />
+                isLoading ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color={colors.primary} />
+                    </View>
+                ) : (
+                    <BookshelfView books={bookItems} onImportPress={handleImportPress} />
+                )
             ) : (
                 <NewsFeed />
             )}
+
+            {/* Import Modal */}
+            <ImportModal
+                visible={isImportModalVisible}
+                onClose={() => setIsImportModalVisible(false)}
+                onImportComplete={handleImportComplete}
+            />
         </View>
     );
 };
+
+// Helper function to format relative time
+function formatRelativeTime(isoDate: string): string {
+    const date = new Date(isoDate);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -194,5 +184,10 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 14,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

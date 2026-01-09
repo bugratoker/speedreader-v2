@@ -22,11 +22,12 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@theme';
-import { RotateCcw, X, Target, BarChart2 } from 'lucide-react-native';
+import { RotateCcw, X, Target, BarChart2, Play, Grid3x3 } from 'lucide-react-native';
 import { HeatGauge } from './HeatGauge';
 import { VictoryOverlay } from './VictoryOverlay';
 import { InfoButton } from '../../ui/InfoButton';
 import { AcademicModal } from '../../ui/AcademicModal';
+import { TrainingStartButton } from '../common/TrainingStartButton';
 
 interface SchulteTableProps {
     onComplete?: (timeMs: number) => void;
@@ -155,11 +156,12 @@ const RedDotCell: React.FC<{ cellSize: number; errorColor: string }> = ({ cellSi
 
 export const SchulteTable: React.FC<SchulteTableProps> = ({ onComplete }) => {
     const { t } = useTranslation();
-    const { colors, spacing, borderRadius, glows } = useTheme();
+    const { colors, spacing, borderRadius, glows, fontFamily, fontSize } = useTheme();
     const { width: windowWidth } = useWindowDimensions();
 
     const [difficulty, setDifficulty] = useState<Difficulty>('normal');
     const [gameState, setGameState] = useState<'ready' | 'playing' | 'complete'>('ready');
+    const [showWelcome, setShowWelcome] = useState(true);
     const [bestTime, setBestTime] = useState<number | null>(null);
     const [combo, setCombo] = useState(0);
     const [maxCombo, setMaxCombo] = useState(0);
@@ -200,6 +202,7 @@ export const SchulteTable: React.FC<SchulteTableProps> = ({ onComplete }) => {
         setCombo(0); // Reset combo
         setGameState('ready');
         setShowResults(false);
+        setShowWelcome(true); // Show welcome overlay on reset
     }, [maxNumber]);
 
     // Reset when difficulty changes
@@ -269,6 +272,12 @@ export const SchulteTable: React.FC<SchulteTableProps> = ({ onComplete }) => {
         return `${s}.${t}s`;
     };
 
+    const handleStart = () => {
+        // Close welcome overlay and reveal the game board
+        // Timer starts on first correct press (existing behavior)
+        setShowWelcome(false);
+    };
+
     // Render Logic
     const renderCells = () => {
         const grid = [];
@@ -303,94 +312,195 @@ export const SchulteTable: React.FC<SchulteTableProps> = ({ onComplete }) => {
     const rankInfo = calculateRank(elapsed, gridSize);
 
     return (
-        <View style={{ width: '100%', alignItems: 'center' }}>
+        <View style={{ width: '100%', alignItems: 'center', flex: 1 }}>
+            {showWelcome ? (
+                // Welcome Overlay
+                <Animated.View
+                    entering={FadeIn.duration(300).springify()}
+                    style={{
+                        flex: 1,
+                        width: '100%',
+                        backgroundColor: colors.surface + 'F8',
+                        padding: spacing.lg,
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                    }}
+                >
+                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                        <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'flex-end', marginBottom: -20, zIndex: 10 }}>
+                            <InfoButton onPress={() => setShowAcademicModal(true)} size={28} />
+                        </View>
 
-            {/* HUD */}
-            <LinearGradient
-                colors={[colors.surfaceElevated, colors.surface]}
-                style={{
-                    width: '100%', maxWidth: 500,
-                    borderRadius: borderRadius.lg, padding: spacing.sm,
-                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-                    marginBottom: spacing.md, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
-                }}
-            >
-                {/* Left side - Target info */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                    <View style={{
-                        width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary,
-                        alignItems: 'center', justifyContent: 'center', marginRight: spacing.sm,
-                        shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 8
-                    }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 20, color: colors.background }}>
-                            {currentTarget <= maxNumber ? currentTarget : '✓'}
+                        {/* Icon with glow */}
+                        <Animated.View
+                            entering={ZoomIn.delay(100).springify()}
+                            style={{
+                                width: 72,
+                                height: 72,
+                                borderRadius: 36,
+                                backgroundColor: colors.secondary + '15',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginBottom: spacing.lg,
+                                shadowColor: colors.secondary,
+                                shadowOpacity: 0.3,
+                                shadowRadius: 20,
+                                elevation: 8,
+                            }}
+                        >
+                            <Grid3x3 size={36} color={colors.secondary} strokeWidth={2} />
+                        </Animated.View>
+
+                        {/* Title */}
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiBold,
+                                fontSize: fontSize.xl,
+                                color: colors.text,
+                                marginBottom: spacing.sm,
+                                letterSpacing: 0.5,
+                                textAlign: 'center',
+                            }}
+                        >
+                            {t('games.schulte.welcome.title')}
                         </Text>
-                    </View>
-                    <View>
-                        <Text style={{ fontSize: 10, color: colors.textMuted, letterSpacing: 1, fontWeight: '600' }}>{t('games.schulte.target')}</Text>
-                        <Text style={{ fontSize: 16, color: colors.primary, fontWeight: 'bold' }}>
-                            {gameState === 'ready' ? `${t('games.schulte.find')} 1` : currentTarget <= maxNumber ? `${t('games.schulte.find')} ${currentTarget}` : t('games.schulte.complete')}
+
+                        {/* Instructions */}
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiRegular,
+                                fontSize: fontSize.sm,
+                                color: colors.textMuted,
+                                textAlign: 'center',
+                                lineHeight: 22,
+                                marginBottom: spacing.xl,
+                                paddingHorizontal: spacing.md,
+                            }}
+                        >
+                            {t('games.schulte.welcome.instructions')}
                         </Text>
-                    </View>
-                </View>
 
-                {/* Right side - Time and Info Button */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <View style={{ alignItems: 'flex-end' }}>
-                        <Text style={{ fontSize: 10, color: colors.textMuted, letterSpacing: 1, fontWeight: '600' }}>{t('games.common.time')}</Text>
-                        <Text style={{ fontSize: 20, color: colors.text, fontVariant: ['tabular-nums'] }}>{formatTime(elapsed)}</Text>
-                    </View>
-                    <InfoButton onPress={() => setShowAcademicModal(true)} size={24} />
-                </View>
-            </LinearGradient>
-
-            {/* Heat Gauge */}
-            {
-                (gameState === 'playing' || gameState === 'complete') && (
-                    <View style={{ width: '100%', maxWidth: 500, marginBottom: spacing.sm }}>
-                        <HeatGauge combo={combo} maxCombo={maxNumber} />
-                    </View>
-                )
-            }
-
-            {/* Game Board (Instant Entry) */}
-            <Animated.View
-                entering={FadeIn.duration(300)}
-                key={difficulty}
-                style={{
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    width: availableWidth,
-                    height: availableWidth,
-                    alignSelf: 'center',
-                    marginBottom: spacing.lg
-                }}
-            >
-                {renderCells()}
-            </Animated.View>
-
-            {/* Difficulty Tabs */}
-            {
-                gameState === 'ready' && (
-                    <View style={{ flexDirection: 'row', gap: 6 }}>
-                        {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map(d => (
-                            <Pressable
-                                key={d}
-                                onPress={() => setDifficulty(d)}
+                        {/* Difficulty Selector */}
+                        <View style={{ width: '100%', maxWidth: 400, marginBottom: spacing.xl }}>
+                            <Text
                                 style={{
-                                    paddingHorizontal: 16, paddingVertical: 8,
-                                    backgroundColor: difficulty === d ? 'rgba(0,255,255,0.15)' : 'transparent',
-                                    borderRadius: 8, borderWidth: 1, borderColor: difficulty === d ? colors.primary : '#333'
+                                    fontFamily: fontFamily.uiMedium,
+                                    fontSize: fontSize.xs,
+                                    color: colors.textMuted,
+                                    marginBottom: spacing.md,
+                                    textAlign: 'center',
                                 }}
                             >
-                                <Text style={{ fontSize: 13, color: difficulty === d ? colors.primary : '#666', fontWeight: 'bold' }}>
-                                    {DIFFICULTY_CONFIG[d].label}
-                                </Text>
-                            </Pressable>
-                        ))}
+                                {t('games.common.selectDifficulty')}
+                            </Text>
+                            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.sm }}>
+                                {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map(d => (
+                                    <Pressable
+                                        key={d}
+                                        onPress={() => setDifficulty(d)}
+                                        style={{
+                                            flex: 1,
+                                            paddingHorizontal: spacing.md,
+                                            paddingVertical: spacing.md,
+                                            backgroundColor: difficulty === d ? colors.secondary : colors.surfaceElevated,
+                                            borderRadius: borderRadius.full,
+                                            borderWidth: 1,
+                                            borderColor: difficulty === d ? colors.secondary : colors.glassBorder,
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontSize: fontSize.xs,
+                                                color: difficulty === d ? colors.white : colors.textMuted,
+                                                fontFamily: fontFamily.uiMedium,
+                                            }}
+                                        >
+                                            {DIFFICULTY_CONFIG[d].label}
+                                        </Text>
+                                    </Pressable>
+                                ))}
+                            </View>
+                        </View>
                     </View>
-                )
-            }
+
+                    {/* Start Button */}
+                    <View style={{ width: '100%', maxWidth: 400 }}>
+                        <TrainingStartButton
+                            onPress={handleStart}
+                            title={t('games.common.start')}
+                            icon={Play}
+                        />
+                    </View>
+                </Animated.View>
+            ) : (
+                // Game View
+                <>
+                    {/* HUD */}
+                    <LinearGradient
+                        colors={[colors.surfaceElevated, colors.surface]}
+                        style={{
+                            width: '100%', maxWidth: 500,
+                            borderRadius: borderRadius.lg, padding: spacing.sm,
+                            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                            marginBottom: spacing.md, borderWidth: 1, borderColor: colors.glassBorder,
+                        }}
+                    >
+                        {/* Left side - Target info */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                            <View style={{
+                                width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary,
+                                alignItems: 'center', justifyContent: 'center', marginRight: spacing.sm,
+                                shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 8
+                            }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: 20, color: colors.background }}>
+                                    {currentTarget <= maxNumber ? currentTarget : '✓'}
+                                </Text>
+                            </View>
+                            <View>
+                                <Text style={{ fontSize: 10, color: colors.textMuted, letterSpacing: 1, fontWeight: '600' }}>{t('games.schulte.target')}</Text>
+                                <Text style={{ fontSize: 16, color: colors.primary, fontWeight: 'bold' }}>
+                                    {gameState === 'ready' ? `${t('games.schulte.find')} 1` : currentTarget <= maxNumber ? `${t('games.schulte.find')} ${currentTarget}` : t('games.schulte.complete')}
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* Right side - Time and Info Button */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            <View style={{ alignItems: 'flex-end' }}>
+                                <Text style={{ fontSize: 10, color: colors.textMuted, letterSpacing: 1, fontWeight: '600' }}>{t('games.common.time')}</Text>
+                                <Text style={{ fontSize: 20, color: colors.text, fontVariant: ['tabular-nums'] }}>{formatTime(elapsed)}</Text>
+                            </View>
+                            <InfoButton onPress={() => setShowAcademicModal(true)} size={24} />
+                        </View>
+                    </LinearGradient>
+
+                    {/* Heat Gauge */}
+                    {
+                        (gameState === 'playing' || gameState === 'complete') && (
+                            <View style={{ width: '100%', maxWidth: 500, marginBottom: spacing.sm }}>
+                                <HeatGauge combo={combo} maxCombo={maxNumber} />
+                            </View>
+                        )
+                    }
+
+                    {/* Game Board */}
+                    <Animated.View
+                        entering={FadeIn.duration(300)}
+                        key={difficulty}
+                        style={{
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
+                            width: availableWidth,
+                            height: availableWidth,
+                            alignSelf: 'center',
+                            marginBottom: spacing.lg
+                        }}
+                    >
+                        {renderCells()}
+                    </Animated.View>
+                </>
+            )}
 
             {/* Victory Overlay */}
             <Modal visible={showResults} transparent animationType="none" onRequestClose={() => setShowResults(false)}>

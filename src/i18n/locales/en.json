@@ -161,6 +161,12 @@
                 "subtitle": "Parafoveal Processing Training",
                 "description": "Identify words using only peripheral vision",
                 "academicBasis": "Expands parafoveal span for faster reading"
+            },
+            "comprehension": {
+                "title": "Reading Comprehension",
+                "subtitle": "Speed & Understanding Training",
+                "description": "Read passages at high speed and answer questions every 100 words to train retention.",
+                "academicBasis": "Balances processing speed with active recall"
             }
         },
         "difficulty": {
@@ -195,6 +201,8 @@
             "cycles": "cycles",
             "jumps": "jumps",
             "grid": "Grid",
+            "selectDifficulty": "Select Difficulty",
+            "selectSpeed": "Select Speed",
             "directions": {
                 "center": "Center",
                 "right": "Right",
@@ -214,6 +222,10 @@
             "relaxed": "Relaxed",
             "strictFixation": "Strict Fixation",
             "newRecord": "NEW RECORD!",
+            "welcome": {
+                "title": "Schulte Table",
+                "instructions": "Find all numbers in order starting from 1. Keep your focus on the red center dot."
+            },
             "ranks": {
                 "sPlus": "Godlike Speed! ⚡",
                 "s": "Elite Vision! 👁️",
@@ -236,6 +248,9 @@
             "trainingTip": "This trains \"Return Sweeps\" for faster line-to-line reading and reduces involuntary regressions.",
             "greatJob": "Great Saccades!",
             "completeMsg": "Anti-regression training complete ✓",
+            "welcome": {
+                "instructions": "Follow the red dot as it jumps between fixation points. After reading, answer comprehension questions to test your focus."
+            },
             "patterns": {
                 "lineScan": "Line Scan",
                 "returnSweep": "Return Sweep",
@@ -258,6 +273,10 @@
             "instructions": "Follow the dot smoothly. Keep head still, move only eyes.",
             "titleComplete": "Eyes Stretched!",
             "completeMsg": "Extraocular muscles activated ✓",
+            "welcome": {
+                "title": "Eye Stretch Training",
+                "instructions": "Follow the glowing dot through the infinity pattern. Relax and let your eyes flow naturally."
+            },
             "speed": {
                 "slow": "Relaxed",
                 "medium": "Training",
@@ -350,6 +369,14 @@
             "saccadic": {
                 "title": "Saccadic Eye Movements in Reading",
                 "description": "This groundbreaking study by Professor Keith Rayner scientifically proves that the main factors limiting reading speed are incorrect saccades and regressions (backward eye movements).\n\n📖 Rayner, K. (1998). 'Eye movements in reading and information processing: 20 years of research.' Psychological Bulletin.\n\nThis training targets 'return sweep' movements (transitioning from line end to new line start), reducing regressions by up to 40% and improving reading fluency."
+            },
+            "visualSpan": {
+                "title": "Visual Span & Parafoveal Processing",
+                "description": "Speed readers utilize 'Parafoveal Processing' to pre-process upcoming words before their eyes arrive. The Visual Masking technique prevents retinal after-images, forcing genuine visual memory.\n\n📖 Rayner, K. (2009). 'Eye movements and attention in reading, scene perception, and visual search.' Quarterly Journal of Experimental Psychology.\n\nResearch shows training parafoveal span can expand reading speed by up to 40% while maintaining comprehension."
+            },
+            "comprehension": {
+                "title": "Active Recall & Speed",
+                "description": "Speed reading without comprehension is merely 'page turning'. This training enforces 'Active Recall' by interrupting the reading flow with targeted questions.\n\n📖 Roediger, H. L., & Karpicke, J. D. (2006). 'The power of testing memory: Basic research and implications for educational practice.' Psychological Science.\n\nTesting effect research demonstrates that retrieving information during the learning process significantly improves long-term retention compared to passive reading along."
             },
             "learnMore": "Learn More"
         }

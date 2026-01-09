@@ -17,10 +17,14 @@ import Animated, {
     Easing,
     cancelAnimation,
     runOnJS,
+    FadeIn,
+    ZoomIn,
 } from 'react-native-reanimated';
 import { useTheme } from '@theme';
-import { PremiumButton } from '../../ui/PremiumButton';
+import { TrainingStartButton } from '../common/TrainingStartButton';
 import { Play, Pause, RotateCcw, Infinity } from 'lucide-react-native';
+import { InfoButton } from '../../ui/InfoButton';
+import { AcademicModal } from '../../ui/AcademicModal';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -42,6 +46,8 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
     const { t } = useTranslation();
     const { colors, spacing, fontFamily, fontSize, borderRadius, glows } = useTheme();
 
+    const [showWelcome, setShowWelcome] = useState(true);
+    const [showAcademicModal, setShowAcademicModal] = useState(false);
     const [isRunning, setIsRunning] = useState(false);
     const [speed, setSpeed] = useState<SpeedLevel>('medium');
     const [cycleCount, setCycleCount] = useState(0);
@@ -161,6 +167,9 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
     }, [isRunning, speed]);
 
     const handleStart = () => {
+        if (showWelcome) {
+            setShowWelcome(false);
+        }
         if (isComplete) {
             handleReset();
         }
@@ -176,6 +185,7 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
         setCycleCount(0);
         cycleCountRef.current = 0;
         setIsComplete(false);
+        setShowWelcome(true);
         setCurrentPosition(t('games.common.directions.center'));
         progress.value = 0;
         dotScale.value = 1;
@@ -228,23 +238,146 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
     const trail3Style = createTrailStyle(0.15);
 
     return (
-        <View style={{ alignItems: 'center' }}>
-            {/* Header with icon */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
-                <Infinity size={22} color={colors.secondary} strokeWidth={2} />
-                <Text
+        <View style={{ alignItems: 'center', flex: 1, width: '100%' }}>
+            {showWelcome ? (
+                // Welcome Overlay
+                <Animated.View
+                    entering={FadeIn.duration(300).springify()}
                     style={{
-                        fontFamily: fontFamily.uiRegular,
-                        fontSize: fontSize.sm,
-                        color: colors.textMuted,
-                        textAlign: 'center',
-                        marginLeft: spacing.sm,
                         flex: 1,
+                        width: '100%',
+                        backgroundColor: colors.surface + 'F8',
+                        padding: spacing.lg,
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                     }}
                 >
-                    {t('games.eyestretch.instructions')}
-                </Text>
-            </View>
+                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                        <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'flex-end', marginBottom: -20, zIndex: 10 }}>
+                            <InfoButton onPress={() => setShowAcademicModal(true)} size={28} />
+                        </View>
+
+                        {/* Animated Infinity Icon */}
+                        <Animated.View
+                            entering={ZoomIn.delay(100).springify()}
+                            style={{
+                                width: 72,
+                                height: 72,
+                                borderRadius: 36,
+                                backgroundColor: colors.secondary + '15',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginBottom: spacing.lg,
+                                shadowColor: colors.secondary,
+                                shadowOpacity: 0.3,
+                                shadowRadius: 20,
+                                elevation: 8,
+                            }}
+                        >
+                            <Infinity size={36} color={colors.secondary} strokeWidth={2} />
+                        </Animated.View>
+
+                        {/* Title */}
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiBold,
+                                fontSize: fontSize.xl,
+                                color: colors.text,
+                                marginBottom: spacing.sm,
+                                letterSpacing: 0.5,
+                                textAlign: 'center',
+                            }}
+                        >
+                            {t('games.eyestretch.welcome.title')}
+                        </Text>
+
+                        {/* Instructions */}
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiRegular,
+                                fontSize: fontSize.sm,
+                                color: colors.textMuted,
+                                textAlign: 'center',
+                                lineHeight: 22,
+                                marginBottom: spacing.xl,
+                                paddingHorizontal: spacing.md,
+                            }}
+                        >
+                            {t('games.eyestretch.welcome.instructions')}
+                        </Text>
+
+                        {/* Speed Selector */}
+                        <View style={{ width: '100%', maxWidth: 400, marginBottom: spacing.xl }}>
+                            <Text
+                                style={{
+                                    fontFamily: fontFamily.uiMedium,
+                                    fontSize: fontSize.xs,
+                                    color: colors.textMuted,
+                                    marginBottom: spacing.md,
+                                    textAlign: 'center',
+                                }}
+                            >
+                                {t('games.common.selectSpeed')}
+                            </Text>
+                            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.sm }}>
+                                {(Object.keys(SPEED_CONFIG) as SpeedLevel[]).map((level) => (
+                                    <Pressable
+                                        key={level}
+                                        onPress={() => setSpeed(level)}
+                                        style={{
+                                            flex: 1,
+                                            paddingHorizontal: spacing.md,
+                                            paddingVertical: spacing.md,
+                                            backgroundColor: speed === level ? colors.secondary : colors.surfaceElevated,
+                                            borderRadius: borderRadius.full,
+                                            borderWidth: 1,
+                                            borderColor: speed === level ? colors.secondary : colors.glassBorder,
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontSize: fontSize.xs,
+                                                color: speed === level ? colors.white : colors.textMuted,
+                                                fontFamily: fontFamily.uiMedium,
+                                            }}
+                                        >
+                                            {t(`games.eyestretch.speed.${level}`)}
+                                        </Text>
+                                    </Pressable>
+                                ))}
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* Start Button */}
+                    <View style={{ width: '100%', maxWidth: 400 }}>
+                        <TrainingStartButton
+                            onPress={handleStart}
+                            title={t('games.common.start')}
+                            icon={Play}
+                        />
+                    </View>
+                </Animated.View>
+            ) : (
+                // Exercise View
+                <View style={{ alignItems: 'center', width: '100%' }}>
+                    {/* Header with icon */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+                        <Infinity size={22} color={colors.secondary} strokeWidth={2} />
+                        <Text
+                            style={{
+                                fontFamily: fontFamily.uiRegular,
+                                fontSize: fontSize.sm,
+                                color: colors.text,
+                                textAlign: 'center',
+                                marginLeft: spacing.sm,
+                                flex: 1,
+                            }}
+                        >
+                            {t('games.eyestretch.instructions')}
+                        </Text>
+                    </View>
 
             {/* Progress and Position */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md, gap: spacing.lg }}>
@@ -447,13 +580,10 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
             {/* Controls */}
             <View style={{ flexDirection: 'row', marginTop: spacing.lg, gap: spacing.md }}>
                 <View style={{ flex: 1 }}>
-                    <PremiumButton
+                    <TrainingStartButton
                         title={isRunning ? t('games.common.pause') : isComplete ? t('games.common.restart') : t('games.common.start')}
                         onPress={isRunning ? handlePause : handleStart}
                         icon={isRunning ? Pause : Play}
-                        variant="secondary"
-                        size="xl"
-                        fullWidth
                     />
                 </View>
 
@@ -475,6 +605,15 @@ export const EyeStretch: React.FC<EyeStretchProps> = ({ onComplete }) => {
                     <RotateCcw size={24} color={colors.textMuted} strokeWidth={2} />
                 </Pressable>
             </View>
+                </View>
+            )}
+            {/* Academic Modal */}
+            <AcademicModal
+                visible={showAcademicModal}
+                onClose={() => setShowAcademicModal(false)}
+                title={t('training.exercises.eyestretch.title', { defaultValue: 'Infinity Stretch' })}
+                description={t('training.exercises.eyestretch.academicBasis', { defaultValue: 'Follow the Lazy-8 pattern to exercise all six extraocular muscles. Improves smooth pursuit and ciliary muscle flexibility.' })}
+            />
         </View>
     );
 };

@@ -161,6 +161,12 @@
                 "subtitle": "Parafoveal İşleme Eğitimi",
                 "description": "Sadece çevresel görüşü kullanarak kelimeleri tanımlayın",
                 "academicBasis": "Daha hızlı okuma için parafoveal alanı genişletir"
+            },
+            "comprehension": {
+                "title": "Okuduğunu Anlama",
+                "subtitle": "Hız ve Anlama Eğitimi",
+                "description": "Metinleri yüksek hızda okuyun ve akılda kalıcılığı eğitmek için her 100 kelimede bir soruları yanıtlayın.",
+                "academicBasis": "İşleme hızını aktif hatırlama ile dengeler"
             }
         },
         "difficulty": {
@@ -350,6 +356,10 @@
             "saccadic": {
                 "title": "Okumada Sakkadik Göz Hareketleri",
                 "description": "Profesör Keith Rayner tarafından yapılan bu çığır açıcı çalışma, okuma hızını sınırlayan en büyük etkenin gözlerin yanlış sıçramaları (saccades) ve geriye dönüşler (regressions) olduğunu bilimsel olarak ispatlıyor.\n\n📖 Rayner, K. (1998). 'Eye movements in reading and information processing: 20 years of research.' Psychological Bulletin.\n\nBu antrenman, 'return sweep' hareketlerini (satır sonundan yeni satır başına geçiş) hedefleyerek regresyonları %40'a kadar azaltır ve okuma akıcılığını artırır."
+            },
+            "comprehension": {
+                "title": "Aktif Hatırlama ve Hız",
+                "description": "Anlamadan yapılan hızlı okuma sadece 'sayfa çevirmektir'. Bu eğitim, okuma akışını hedeflenen sorularla kesintiye uğratarak 'Aktif Hatırlamayı' zorunlu kılar.\n\n📖 Roediger, H. L., & Karpicke, J. D. (2006). 'The power of testing memory: Basic research and implications for educational practice.' Psychological Science.\n\nTest etkisi araştırması, öğrenme süreci sırasında bilgiyi geri çağırmanın, pasif okumaya kıyasla uzun süreli kalıcılığı önemli ölçüde artırdığını göstermektedir."
             },
             "learnMore": "Daha Fazla Bilgi"
         }

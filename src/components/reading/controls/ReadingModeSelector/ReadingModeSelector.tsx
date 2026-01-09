@@ -1,15 +1,17 @@
 /**
- * Reading Mode Selector Component (v4 - With Settings)
+ * Reading Mode Selector Component (v5 - Enhanced UX)
  * Dropdown selector for all 5 modes with settings button next to it
+ * Features: mode descriptions, better animations, improved visual hierarchy
  */
 
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, Pressable, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Zap, Eye, Layers, Activity, Columns2, Settings, ChevronDown } from 'lucide-react-native';
-import { ReadingMode, MODE_LABELS } from '@/engine/types';
+import { Zap, Eye, Layers, Activity, Columns2, Settings, ChevronDown, Check } from 'lucide-react-native';
+import { ReadingMode, MODE_LABELS, MODE_DESCRIPTIONS } from '@/engine/types';
 import { fontFamily, fontSize, spacing, borderRadius } from '@theme';
 import { useTheme } from '@theme';
+import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 
 export interface ReadingModeSelectorProps {
     currentMode: ReadingMode;
@@ -109,79 +111,156 @@ export const ReadingModeSelector: React.FC<ReadingModeSelectorProps> = ({
                 </TouchableOpacity>
             )}
 
-            {/* Dropdown Modal */}
+            {/* Enhanced Dropdown Modal */}
             <Modal
                 visible={dropdownVisible}
                 transparent
-                animationType="fade"
+                animationType="none"
                 onRequestClose={() => setDropdownVisible(false)}
             >
-                <Pressable
-                    style={styles.modalOverlay}
-                    onPress={() => setDropdownVisible(false)}
-                >
-                    <View
-                        style={[
-                            styles.dropdownMenu,
-                            {
-                                backgroundColor: colors.surfaceElevated,
-                                borderColor: colors.glassBorder,
-                            },
-                        ]}
+                {dropdownVisible && (
+                    <Animated.View
+                        entering={FadeIn.duration(150)}
+                        exiting={FadeOut.duration(100)}
+                        style={styles.modalOverlay}
                     >
-                        {ALL_MODES.map((mode) => {
-                            const isActive = mode === currentMode;
-                            const label = MODE_LABELS[mode][lang];
+                        <Pressable
+                            style={StyleSheet.absoluteFill}
+                            onPress={() => setDropdownVisible(false)}
+                        />
+                        <Animated.View
+                            entering={SlideInDown.duration(250)}
+                            exiting={SlideOutDown.duration(150)}
+                            style={[
+                                styles.dropdownMenu,
+                                {
+                                    backgroundColor: colors.surfaceElevated,
+                                    borderColor: colors.glassBorder,
+                                },
+                            ]}
+                        >
+                            {/* Modal Header */}
+                            <View style={styles.modalHeader}>
+                                <Text style={[
+                                    styles.modalTitle,
+                                    {
+                                        fontFamily: fontFamily.uiBold,
+                                        color: colors.text
+                                    }
+                                ]}>
+                                    Reading Modes
+                                </Text>
+                                <Text style={[
+                                    styles.modalSubtitle,
+                                    {
+                                        fontFamily: fontFamily.uiRegular,
+                                        color: colors.textMuted
+                                    }
+                                ]}>
+                                    Choose your preferred reading style
+                                </Text>
+                            </View>
 
-                            return (
-                                <Pressable
-                                    key={mode}
-                                    onPress={() => {
-                                        onModeChange(mode);
-                                        setDropdownVisible(false);
-                                    }}
-                                    style={({ pressed }) => [
-                                        styles.dropdownItem,
-                                        {
-                                            backgroundColor: pressed
-                                                ? colors.primaryGlow
-                                                : isActive
-                                                    ? colors.primary + '20'
-                                                    : 'transparent',
-                                        },
-                                    ]}
-                                >
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View style={isActive ? {
-                                            shadowColor: colors.primary,
-                                            shadowOffset: { width: 0, height: 0 },
-                                            shadowOpacity: 0.6,
-                                            shadowRadius: 8,
-                                            elevation: 4,
-                                        } : {}}>
-                                            <ModeIcon
-                                                mode={mode}
-                                                color={isActive ? colors.primary : colors.text}
-                                                size={20}
-                                            />
+                            {/* Mode Options */}
+                            <ScrollView
+                                style={styles.modesContainer}
+                                showsVerticalScrollIndicator={false}
+                            >
+                                {ALL_MODES.map((mode) => {
+                                    const isActive = mode === currentMode;
+                                    const label = MODE_LABELS[mode][lang];
+                                    const description = MODE_DESCRIPTIONS[mode][lang];
+
+                                    return (
+                                        <View key={mode}>
+                                            <Pressable
+                                                onPress={() => {
+                                                    onModeChange(mode);
+                                                    setDropdownVisible(false);
+                                                }}
+                                                style={({ pressed }) => [
+                                                    styles.modeCard,
+                                                    {
+                                                        backgroundColor: isActive
+                                                            ? colors.primary + '15'
+                                                            : pressed
+                                                                ? colors.surface
+                                                                : 'transparent',
+                                                        borderColor: isActive
+                                                            ? colors.primary
+                                                            : 'transparent',
+                                                        borderWidth: isActive ? 2 : 0,
+                                                    },
+                                                ]}
+                                            >
+                                                <View style={styles.modeCardContent}>
+                                                    {/* Icon Container */}
+                                                    <View style={[
+                                                        styles.iconContainer,
+                                                        {
+                                                            backgroundColor: isActive
+                                                                ? colors.primary + '20'
+                                                                : colors.surface,
+                                                        }
+                                                    ]}>
+                                                        <ModeIcon
+                                                            mode={mode}
+                                                            color={isActive ? colors.primary : colors.textMuted}
+                                                            size={22}
+                                                            strokeWidth={2.5}
+                                                        />
+                                                    </View>
+
+                                                    {/* Text Content */}
+                                                    <View style={styles.modeTextContent}>
+                                                        <Text
+                                                            numberOfLines={1}
+                                                            style={[
+                                                                styles.modeLabel,
+                                                                {
+                                                                    fontFamily: isActive ? fontFamily.uiBold : fontFamily.uiMedium,
+                                                                    color: isActive ? colors.primary : colors.text,
+                                                                }
+                                                            ]}
+                                                        >
+                                                            {label}
+                                                        </Text>
+                                                        <Text
+                                                            numberOfLines={2}
+                                                            style={[
+                                                                styles.modeDescription,
+                                                                {
+                                                                    fontFamily: fontFamily.uiRegular,
+                                                                    color: colors.textMuted,
+                                                                }
+                                                            ]}
+                                                        >
+                                                            {description}
+                                                        </Text>
+                                                    </View>
+
+                                                    {/* Active Indicator */}
+                                                    {isActive && (
+                                                        <View style={[
+                                                            styles.checkmarkContainer,
+                                                            { backgroundColor: colors.primary }
+                                                        ]}>
+                                                            <Check
+                                                                size={16}
+                                                                color="#ffffff"
+                                                                strokeWidth={3}
+                                                            />
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            </Pressable>
                                         </View>
-                                        <Text
-                                            numberOfLines={1}
-                                            style={{
-                                                fontFamily: isActive ? fontFamily.uiBold : fontFamily.uiMedium,
-                                                fontSize: 18,
-                                                color: isActive ? colors.primary : colors.text,
-                                                marginLeft: spacing.sm,
-                                            }}
-                                        >
-                                            {label}
-                                        </Text>
-                                    </View>
-                                </Pressable>
-                            );
-                        })}
-                    </View>
-                </Pressable>
+                                    );
+                                })}
+                            </ScrollView>
+                        </Animated.View>
+                    </Animated.View>
+                )}
             </Modal>
         </View>
     );
@@ -191,16 +270,16 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         gap: spacing.sm,
-        alignItems: 'stretch', // Changed to stretch for equal heights
+        alignItems: 'stretch',
     },
     dropdown: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: spacing.md,
-        paddingVertical: spacing.md + 2, // Matched height
+        paddingVertical: spacing.md + 2,
         borderRadius: borderRadius.lg,
         borderWidth: 1,
-        minHeight: 52, // Explicit height
+        minHeight: 52,
     },
     settingsButton: {
         flexDirection: 'row',
@@ -210,35 +289,86 @@ const styles = StyleSheet.create({
         paddingVertical: spacing.md,
         borderRadius: borderRadius.lg,
         borderWidth: 1,
-        minHeight: 52, // Same as dropdown
-        minWidth: 52, // Square button
+        minHeight: 52,
+        minWidth: 52,
     },
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.7)', // Darker overlay
-        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        justifyContent: 'flex-end',
         alignItems: 'center',
-        padding: spacing.lg,
     },
     dropdownMenu: {
-        width: '90%',
-        minWidth: 320,
-        maxWidth: 400,
-        borderRadius: borderRadius.xl,
+        width: '100%',
+        maxHeight: '80%',
+        borderTopLeftRadius: borderRadius.bento,
+        borderTopRightRadius: borderRadius.bento,
         borderWidth: 1,
-        padding: spacing.md,
+        paddingBottom: spacing.lg,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.4,
-        shadowRadius: 16,
-        elevation: 12,
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 20,
+        elevation: 16,
     },
-    dropdownItem: {
+    modalHeader: {
+        paddingHorizontal: spacing.lg,
+        paddingTop: spacing.lg,
+        paddingBottom: spacing.sm,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+        marginBottom: spacing.sm,
+    },
+    modalTitle: {
+        fontSize: 22,
+        marginBottom: spacing.xs,
+    },
+    modalSubtitle: {
+        fontSize: 13,
+    },
+    modesContainer: {
+        paddingHorizontal: spacing.md,
+    },
+    modeCard: {
+        borderRadius: borderRadius.lg,
+        marginBottom: spacing.sm,
+        overflow: 'hidden',
+    },
+    modeCardContent: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
+        padding: spacing.md,
+        gap: spacing.sm,
+    },
+    iconContainer: {
+        width: 48,
+        height: 48,
         borderRadius: borderRadius.md,
-        marginBottom: spacing.md,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modeTextContent: {
+        flex: 1,
+        gap: spacing.xs - 2,
+    },
+    modeLabel: {
+        fontSize: 17,
+        lineHeight: 20,
+    },
+    modeDescription: {
+        fontSize: 13,
+        lineHeight: 17,
+    },
+    checkmarkContainer: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
     },
 });

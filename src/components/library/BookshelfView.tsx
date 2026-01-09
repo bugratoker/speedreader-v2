@@ -54,7 +54,7 @@ export const BookshelfView: React.FC<BookshelfViewProps> = ({ books, onImportPre
         : books.filter(book => book.category === selectedCategory);
 
     const handleBookPress = (book: BookItem) => {
-        navigation.navigate('Read');
+        navigation.navigate('Read', { bookId: book.id, bookTitle: book.title });
     };
 
     const renderListCard = (book: BookItem, index: number) => {

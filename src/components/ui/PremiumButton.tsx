@@ -96,7 +96,8 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
 
         switch (variant) {
             case 'primary':
-                return [colors.primary, colors.primary];
+                // Glassy gradient: slightly transparent primary
+                return [colors.primary + 'DD', colors.primary + 'AA'];
             case 'secondary':
                 return [colors.secondary, colors.secondary];
             case 'outline':

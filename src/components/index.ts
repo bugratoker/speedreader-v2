@@ -17,6 +17,9 @@ export * from './training/SaccadicJumps';
 export * from './training/EyeStretch';
 export * from './training/PeripheralCatch';
 
+// Library Components
+export * from './library';
+
 // UI Components
 export * from './ui/Button';
 export * from './ui/TabBar';

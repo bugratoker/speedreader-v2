@@ -83,6 +83,11 @@ export const ComprehensionModal: React.FC<ComprehensionModalProps> = ({
         }
     };
 
+    // Early return if no valid question
+    if (!question || !question.options) {
+        return null;
+    }
+
     return (
         <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
             {visible && (
@@ -354,6 +359,7 @@ const styles = StyleSheet.create({
     },
     modalContainer: {
         width: '100%',
+        minHeight: 400,
         maxHeight: '85%',
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
@@ -393,7 +399,8 @@ const styles = StyleSheet.create({
         borderRadius: 2,
     },
     content: {
-        flex: 1,
+        flexGrow: 1,
+        flexShrink: 1,
         paddingHorizontal: 20,
     },
     questionText: {

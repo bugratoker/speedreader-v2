@@ -5,3 +5,4 @@ export * from './TrainingScreen';
 export * from './ProfileScreen';
 export * from './WelcomeScreen';
 export * from './AssessmentScreen';
+export * from './ComprehensionScreen';

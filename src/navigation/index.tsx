@@ -20,7 +20,7 @@ import {
 export type MainTabParamList = {
     Home: undefined;
     Library: undefined;
-    Read: { bookId?: string; bookTitle?: string; comprehensionMode?: boolean } | undefined;
+    Read: { bookId?: string; bookTitle?: string } | undefined;
     Training: undefined;
     Profile: undefined;
 };

@@ -32,6 +32,7 @@ import {
     EyeStretch,
     PeripheralCatch
 } from '../../components';
+import { ComprehensionScreen } from '../ComprehensionScreen';
 
 type ExerciseType = 'schulte' | 'saccadic' | 'eyestretch' | 'peripheral' | 'comprehension' | null;
 type ScreenState = 'hub' | 'detail' | 'active';
@@ -324,15 +325,20 @@ export const TrainingScreen: React.FC = () => {
 
     // Handle starting an exercise
     const handleStartExercise = () => {
-        if (activeExercise === 'comprehension') {
-            navigate('Read', { comprehensionMode: true });
-        } else {
-            setScreenState('active');
-        }
+        setScreenState('active');
     };
 
     // Active Exercise View
     if (screenState === 'active' && activeExercise) {
+        // ComprehensionScreen is a full-screen component, render it directly
+        if (activeExercise === 'comprehension') {
+            return (
+                <View style={{ flex: 1 }} {...panResponder.panHandlers}>
+                    <ComprehensionScreen />
+                </View>
+            );
+        }
+
         return (
             <View
                 style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}
@@ -553,12 +559,13 @@ export const TrainingScreen: React.FC = () => {
                             accentColor={exercises[4].accentColor}
                             glowColor={exercises[4].glowColor}
                             onPress={() => {
-                                navigate('Read', { comprehensionMode: true });
+                                setActiveExercise('comprehension');
+                                setScreenState('active');
                             }}
                             index={4}
                         />
                         {/* Empty spacer to keep grid alignment if needed, or just one card takes half width */}
-                        <View style={{ width: CARD_SIZE }} /> 
+                        <View style={{ width: CARD_SIZE }} />
                     </View>
                 </View>
 

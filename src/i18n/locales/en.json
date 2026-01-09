@@ -380,5 +380,166 @@
             },
             "learnMore": "Learn More"
         }
+    },
+    "comprehension": {
+        "title": "Comprehension Check",
+        "progress": "Question {{current}} of {{total}}",
+        "submit": "Submit Answer",
+        "continue": "Continue Reading",
+        "correct": "✓ Correct!",
+        "incorrect": "✗ Incorrect",
+        "complete": "Training Complete!",
+        "score": "You scored {{correct}} out of {{total}}",
+        "goodJob": "Great job! Your comprehension is excellent.",
+        "keepPracticing": "Keep practicing to improve your comprehension.",
+        "tryAgain": "Try Again",
+        "backToTraining": "Back to Training",
+        "selectPassage": "Select a Reading",
+        "random": "Random",
+        "aiGenerate": "AI Generate",
+        "questions": "questions",
+        "todaysReading": "Today's Reading",
+        "completed": "Completed",
+        "allReadings": "All Readings",
+        "categories": {
+            "all": "All",
+            "science": "Science",
+            "psychology": "Psychology",
+            "technology": "Technology"
+        },
+        "ai": {
+            "title": "Custom Reading",
+            "subtitle": "Customize your reading experience",
+            "generate": "Generate",
+            "topicLabel": "Topic",
+            "topicPlaceholder": "e.g. History of Jazz, Black Holes...",
+            "lengthLabel": "Length",
+            "languageLabel": "Language",
+            "mockTitle": "AI Generated: The Future of Learning",
+            "topics": {
+                "science": "Science",
+                "psychology": "Psychology",
+                "technology": "Technology",
+                "creativity": "Creativity"
+            }
+        },
+        "difficulty": {
+            "short": "Short",
+            "medium": "Medium",
+            "long": "Long"
+        },
+        "passages": [
+            {
+                "title": "Sleep Architecture: The Brain’s Nocturnal Laboratory and Memory Management",
+                "content": "For decades, sleep was erroneously viewed as a biological pause or a passive state of dormancy—a necessary but unproductive 'down-time' for the human organism. However, modern neuroscience has proven that the sleeping brain is often more metabolically active than the waking one, performing complex structural tasks essential for cognitive health. Human sleep follows a specific 'architecture' that repeats in approximately 90-minute cycles throughout the night. This architecture is primarily divided into two main phases: Non-Rapid Eye Movement (NREM) and Rapid Eye Movement (REM). NREM sleep consists of three distinct stages and serves as the foundation for each cycle. (Section 1)\n\nThe most critical phase of NREM sleep is Stage 3, known as 'Deep Sleep' or 'Slow-Wave Sleep' (SWS). During this stage, the brain begins to emit high-amplitude delta waves, and the body focuses on physical restoration. However, the most vital cognitive function here is the activation of the 'glymphatic system.' Think of this as a biological waste-management mechanism that becomes highly active during deep sleep, effectively 'washing' the brain of metabolic byproducts like beta-amyloid. Without this nocturnal cleaning, these toxic proteins can build up, leading to mental fatigue and long-term neurodegenerative issues. (Section 2)\n\nBeyond physical cleaning, deep sleep is the engine behind 'memory consolidation.' Throughout the day, new information is first recorded in the 'hippocampus,' a temporary storage hub with a very limited capacity. During deep sleep, the brain engages in a process where these memories are 'uploaded' from the fragile hippocampus to the 'neocortex,' the brain's permanent, long-term storage site. This transfer ensures that what you learned during the day is transformed from a fleeting thought into a stable, long-term memory that can be accessed in the future. (Section 3)\n\nHowever, memory management is not just about saving data; it is also about deleting the irrelevant. According to the 'Synaptic Homeostasis' theory, the brain actively 'prunes' or weakens unnecessary neural connections while we sleep. This process clears out the 'noise' of the day—trivial details that don't need to be remembered—thereby strengthening the synaptic bonds of important information. Without this nocturnal pruning, our neural circuits would become oversaturated, making it nearly impossible to acquire and process new information the following day. (Section 4)\n\nFollowing the restorative deep sleep, the brain enters the REM phase, where most vivid dreaming occurs. REM acts as an 'integration laboratory.' While NREM focuses on storing raw facts, REM integrates that new data into your existing web of knowledge. This is where creative problem-solving happens; the brain tests novel associations between seemingly unrelated ideas. Furthermore, REM serves as 'overnight therapy,' processing emotional traumas by stripping away the painful 'affect' or sting from a memory while retaining the factual details of the event. (Section 5)\n\nDisrupting this delicate sleep architecture has immediate and compounding consequences for learning and speed reading. Research indicates that just one night of sleep deprivation can reduce the hippocampus's ability to take in new information by up to 40%. Effectively, an exhausted brain loses its ability to 'record' new data. Ultimately, sleep is not a luxury that follows the learning process; it is the very phase where learning is finalized, transforming raw daily data into the wisdom of the future. (Section 6)",
+                "questions": [
+                    {
+                        "question": "According to modern neuroscience, what are the two primary phases of the sleep cycle?",
+                        "option1": "Light sleep and Dream sleep.",
+                        "option2": "NREM and REM sleep.",
+                        "option3": "Active sleep and Passive rest.",
+                        "option4": "Delta waves and Alpha waves.",
+                        "correctIndex": 1,
+                        "explanation": "The text states that the sleep architecture is primarily divided into NREM and REM phases."
+                    },
+                    {
+                        "question": "What is the primary function of the 'glymphatic system' mentioned in the text?",
+                        "option1": "To create new neurons.",
+                        "option2": "To clear metabolic waste products from the brain.",
+                        "option3": "To speed up the heart rate during sleep.",
+                        "option4": "To prevent the person from dreaming.",
+                        "correctIndex": 1,
+                        "explanation": "The glymphatic system is described as a waste-clearance mechanism that 'washes' the brain during deep sleep."
+                    },
+                    {
+                        "question": "Where does the brain move information for long-term storage during memory consolidation?",
+                        "option1": "From the neocortex to the hippocampus.",
+                        "option2": "From the hippocampus to the neocortex.",
+                        "option3": "From the brain stem to the spinal cord.",
+                        "option4": "From the visual cortex to the ears.",
+                        "correctIndex": 1,
+                        "explanation": "The passage explains that memories are 'uploaded' from the temporary hippocampus to the permanent neocortex."
+                    },
+                    {
+                        "question": "What does the 'Synaptic Homeostasis' theory suggest the brain does during sleep?",
+                        "option1": "It records every single detail experienced during the day.",
+                        "option2": "It prunes unnecessary neural connections to reduce noise.",
+                        "option3": "It stops all neural activity to rest the neurons.",
+                        "option4": "It focuses solely on physical muscle repair.",
+                        "correctIndex": 1,
+                        "explanation": "The theory suggests the brain weakens trivial connections to keep the neural network efficient."
+                    },
+                    {
+                        "question": "Which sleep phase is specifically associated with creative problem-solving and emotional integration?",
+                        "option1": "Stage 1 NREM.",
+                        "option2": "Deep Sleep.",
+                        "option3": "REM sleep.",
+                        "option4": "The waking transition.",
+                        "correctIndex": 2,
+                        "explanation": "REM is described as an 'integration laboratory' where the brain forms novel associations and processes emotions."
+                    },
+                    {
+                        "question": "What is the impact of a single night of sleep deprivation on the brain's intake capacity?",
+                        "option1": "It has no measurable impact on learning.",
+                        "option2": "It increases the brain's ability to focus.",
+                        "option3": "It can reduce the ability to form new memories by 40%.",
+                        "option4": "It only affects physical strength, not memory.",
+                        "correctIndex": 2,
+                        "explanation": "The text cites research showing a 40% drop in the hippocampus's ability to take in new data after sleep loss."
+                    }
+                ]
+            },
+            {
+                "title": "The Psychology of Flow: Reaching the Peak of Mental Performance",
+                "content": "The concept of 'Flow,' popularized by psychologist Mihaly Csikszentmihalyi, describes a state of total immersion where an individual becomes so involved in an activity that everything else ceases to exist. Often called being 'in the zone,' Flow is marked by a distorted sense of time and a total loss of self-consciousness. Flow is considered an 'autotelic' experience. The word 'autotelic' comes from the Greek words for 'self' and 'goal,' meaning the activity is rewarding in and of itself, regardless of any external praise or financial reward. For high-level cognitive tasks like speed reading, reaching this state is the key to maximum efficiency. (Section 1)\n\nAt the heart of Flow theory is the 'Flow Channel,' a delicate balance between two variables: the challenge of the task and the skill of the performer. If a task is too easy for your skill level, you will quickly become bored. Conversely, if the challenge is too high, you will experience anxiety and frustration. Flow occurs only in the narrow corridor where the challenge is 'just right'—demanding enough to require your full attention, but not so overwhelming that it causes you to give up. This requires clear goals and immediate feedback so the brain knows exactly how to adjust. (Section 2)\n\nThe neurobiology of this state is fascinating. During Flow, a process called 'transient hypofrontality' occurs. This is the temporary quieting of the prefrontal cortex—the part of the brain responsible for higher-order thinking, self-monitoring, and critical judgment. By 'silencing' the inner critic and the voice of self-doubt, the brain can process information more fluidly and intuitively. This allows the individual to act without the 'lag' of conscious second-guessing, leading to a much faster and more natural performance. (Section 3)\n\nChemically, the brain in Flow releases a powerful cocktail of performance-enhancing neurotransmitters. Dopamine sharpens focus and helps the brain recognize patterns, while norepinephrine increases energy levels and keeps attention steady. Additionally, the brain releases endorphins and anandamide, which act as natural mood elevators. This chemical synergy does more than just boost productivity; it significantly accelerates the learning process. Because the experience feels so good, the brain develops a natural motivation to tackle even harder challenges to return to the Flow state. (Section 4)\n\nIn the context of speed reading, Flow is the moment when mechanical eye movements and cognitive decoding merge into a single, effortless stream. In this state, the reader often stops 'subvocalizing' (hearing the words in their head) and begins to visualize concepts directly. However, Flow is remarkably fragile. Any external interruption, such as a phone notification or a loud noise, can shatter the state instantly. Research suggests it can take up to 20 minutes to re-enter a state of deep concentration after such a break. Therefore, managing your environment is just as important as the reading skill itself. (Section 5)",
+                "questions": [
+                    {
+                        "question": "What does it mean if an activity is described as 'autotelic'?",
+                        "option1": "It requires a team of people to complete.",
+                        "option2": "It is done solely for an external financial reward.",
+                        "option3": "The activity itself is the reward, independent of external goals.",
+                        "option4": "It is a task that happens automatically without thinking.",
+                        "correctIndex": 2,
+                        "explanation": "Autotelic means the activity is intrinsically rewarding and done for its own sake."
+                    },
+                    {
+                        "question": "According to the 'Flow Channel' theory, what happens when a task is too difficult for a person's skill level?",
+                        "option1": "The person enters a state of deep relaxation.",
+                        "option2": "The person feels bored and uninterested.",
+                        "option3": "The person experiences anxiety and frustration.",
+                        "option4": "The person automatically reaches peak performance.",
+                        "correctIndex": 2,
+                        "explanation": "When challenges exceed skills, the resulting emotional state is anxiety rather than flow."
+                    },
+                    {
+                        "question": "What occurs during 'transient hypofrontality' in the brain?",
+                        "option1": "The prefrontal cortex becomes overactive and critical.",
+                        "option2": "The self-monitoring part of the brain is temporarily quieted.",
+                        "option3": "The brain's ability to see colors is reduced.",
+                        "option4": "Long-term memory storage is completely disabled.",
+                        "correctIndex": 1,
+                        "explanation": "Transient hypofrontality involves quieting the 'inner critic' in the prefrontal cortex to allow for fluid performance."
+                    },
+                    {
+                        "question": "Which neurotransmitter is responsible for helping the brain recognize patterns during Flow?",
+                        "option1": "Melatonin.",
+                        "option2": "Insulin.",
+                        "option3": "Dopamine.",
+                        "option4": "Cortisol.",
+                        "correctIndex": 2,
+                        "explanation": "Dopamine is cited as the chemical that sharpens focus and aids in pattern recognition."
+                    },
+                    {
+                        "question": "How does Flow change the experience of a speed reader?",
+                        "option1": "They begin to read every single letter individually.",
+                        "option2": "They stop subvocalizing and begin visualizing concepts directly.",
+                        "option3": "They find it easier to multitask with other apps.",
+                        "option4": "They must hear every word in their head to understand.",
+                        "correctIndex": 1,
+                        "explanation": "In a Flow state, speed readers move past 'hearing' the words and start processing information as direct visual concepts."
+                    }
+                ]
+            }
+        ]
     }
 }

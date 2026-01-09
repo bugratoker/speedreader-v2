@@ -24,7 +24,7 @@ const getDeviceLanguage = (): LanguageCode => {
     if (deviceLocale && deviceLocale in LANGUAGES) {
         return deviceLocale as LanguageCode;
     }
-    return 'en';
+    return 'tr';
 };
 
 // Initialize i18n
@@ -35,8 +35,8 @@ i18n
             en: { translation: en },
             tr: { translation: tr },
         },
-        lng: getDeviceLanguage(),
-        fallbackLng: 'en',
+        lng: 'tr', // Force default to Turkish
+        fallbackLng: 'tr',
         compatibilityJSON: 'v3',
         interpolation: {
             escapeValue: false,

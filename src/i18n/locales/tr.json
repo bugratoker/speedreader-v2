@@ -363,5 +363,226 @@
             },
             "learnMore": "Daha Fazla Bilgi"
         }
+    },
+    "comprehension": {
+        "title": "Anlama Kontrolü",
+        "progress": "Soru {{current}} / {{total}}",
+        "submit": "Cevabı Gönder",
+        "continue": "Okumaya Devam",
+        "correct": "✓ Doğru!",
+        "incorrect": "✗ Yanlış",
+        "complete": "Antrenman Tamamlandı!",
+        "score": "{{total}} sorudan {{correct}} doğru cevapladınız",
+        "goodJob": "Harika iş! Anlama beceriniz mükemmel.",
+        "keepPracticing": "Anlama becerinizi geliştirmek için pratik yapmaya devam edin.",
+        "tryAgain": "Tekrar Dene",
+        "backToTraining": "Antrenmana Dön",
+        "selectPassage": "Bir Metin Seç",
+        "random": "Rastgele",
+        "aiGenerate": "AI Oluştur",
+        "questions": "soru",
+        "todaysReading": "Günün Metni",
+        "completed": "Tamamlandı",
+        "allReadings": "Tüm Metinler",
+        "categories": {
+            "all": "Tümü",
+            "science": "Bilim",
+            "psychology": "Psikoloji",
+            "technology": "Teknoloji"
+        },
+        "ai": {
+            "title": "Özel Metin",
+            "subtitle": "Okuma deneyiminizi özelleştirin",
+            "generate": "Oluştur",
+            "topicLabel": "Konu",
+            "topicPlaceholder": "Örn. Caz Tarihi, Kara Delikler...",
+            "lengthLabel": "Uzunluk",
+            "languageLabel": "Dil",
+            "mockTitle": "AI Oluşturuldu: Öğrenmenin Geleceği",
+            "topics": {
+                "science": "Bilim",
+                "psychology": "Psikoloji",
+                "technology": "Teknoloji",
+                "creativity": "Yaratıcılık"
+            }
+        },
+        "difficulty": {
+            "short": "Kısa",
+            "medium": "Orta",
+            "long": "Uzun"
+        },
+        "passages": [
+            {
+                "title": "Sinirsel Sınır: Beyin-Bilgisayar Arayüzleri ve Yeni İnsanlık",
+                "content": "İnsanlık tarihi boyunca dış dünyayla etkileşimimiz fiziksel sınırlarımıza bağlı kalmıştır; aletleri kullanmak için ellere, fikirleri aktarmak için sese ve bilgiyi emmek için gözlere ihtiyaç duyduk. Ancak bugün, Beyin-Bilgisayar Arayüzleri (BCI) çağı ile bu biyolojik darboğazı aşmanın eşiğindeyiz. BCI teknolojisi, fiziksel hareket veya duyu organlarına ihtiyaç duymadan, biyolojik beyin ile harici dijital cihazlar arasında doğrudan bir iletişim köprüsü kurmayı amaçlar. Bu teknoloji, sadece felçli bir uzvun hareket ettirilmesini değil, bilginin doğrudan beyne aktarılmasını da kapsayan devrimsel bir potansiyele sahiptir. (Bölüm 1)\n\nBu teknolojinin kalbinde nöral sinyallerin yakalanması yatar. Nöronlar birbirleriyle iletişim kurarken mikro düzeyde elektriksel sinyaller üretirler. Bu sinyaller, kafa derisine yerleştirilen sensörler aracılığıyla 'invaziv olmayan' (EEG gibi) yöntemlerle toplanabilir. Daha hassas veriler içinse 'invaziv' prosedürler kullanılarak mikro-elektrot dizileri doğrudan beyin dokusuna (serebral korteks) yerleştirilir. Buradaki en büyük mühendislik zorluğu, bu devasa ve karmaşık elektrik sinyallerini anlamlı verilere dönüştürebilmektedir. (Bölüm 2)\n\nYakalanan ham sinyallerin çözümlenmesi için gelişmiş makine öğrenimi algoritmaları kullanılır. Bu algoritmalar, beynin belirli bir hareketi veya kavramı düşündüğünde oluşturduğu spesifik ateşleme modellerini 'deşifre' etmek üzere eğitilir. Örneğin, bir hasta kolunu hareket ettirdiğini hayal ettiğinde, algoritma bu sinyali yakalar ve bir imleci ekranda hareket ettirmek veya robotik bir kolu kontrol etmek için dijital bir komuta dönüştürür. Bu süreç, biyolojik niyetin doğrudan dijital eyleme dönüşmesidir. (Bölüm 3)\n\nBCI araştırmaları tarihsel olarak öncelikle tıbbi ve terapötik hedeflerle başlamıştır. Özellikle ağır motor engelli veya dış dünya ile tüm iletişimi kopmuş 'kilitlenme sendromlu' bireyler için bu teknoloji bir umut ışığı olmuştur. Günümüzde, tamamen felçli hastaların sadece düşünce gücüyle mesaj yazabildiği, internette gezinebildiği ve tekerlekli sandalyelerini kontrol edebildiği klinik başarılar mevcuttur. Bu başarılar, zihin ile beden arasındaki fiziksel kopukluğun teknolojiyle tamir edilebileceğini kanıtlamıştır. (Bölüm 4)\n\nAncak bu teknolojinin bir sonraki aşaması, sağlıklı bireylerin bilişsel kapasitelerini artırma potansiyelidir. Hızlı okuma kavramını ele alalım; mevcut sınırımız gözün hareket hızı ve beynin sembolleri işleme kapasitesiyle kısıtlıdır. Gelecekte BCI sayesinde, bilgi bir dosyayı yükler gibi doğrudan görsel veya işitsel kortekse aktarılabilir. Bu, öğrenme sürecindeki 'duyusal darboğazı' ortadan kaldırarak bilginin doğrudan zihne 'akıtıldığı' bir aşamaya geçilmesini sağlayabilir. (Bölüm 5)\n\nBu teknolojik ilerleme, beraberinde devasa etik ve felsefi tartışmaları da getirmektedir. En büyük endişe 'nöral mahremiyet' konusundadır. Eğer düşüncelerimiz dijital bir veri olarak dışarı aktarılabiliyorsa, şirketlerin veya hükümetlerin en özel zihinsel süreçlerimize ve bilinçaltımıza erişme ihtimali doğar. Ayrıca, zihin ile makinenin bu kadar iç içe geçtiği bir yapıda, 'benlik' kavramının nerede bittiği ve dijital altyapının nerede başladığı sorusu, geleceğin en büyük hukuksal ve felsefi sorunu olacaktır. (Bölüm 6)",
+                "questions": [
+                    {
+                        "question": "Beyin-Bilgisayar Arayüzlerinin (BCI) temel amacı nedir?",
+                        "option1": "Bilgisayar donanımlarını hızlandırmak.",
+                        "option2": "Beyin ile dijital cihazlar arasında doğrudan iletişim yolu kurmak.",
+                        "option3": "İnsan beynini tamamen dijital bir ortama kopyalamak.",
+                        "option4": "Göz sağlığını korumak için ekranları ortadan kaldırmak.",
+                        "correctIndex": 1,
+                        "explanation": "BCI, biyolojik beyin ile teknoloji arasında aracı organları baypas eden bir köprü kurmayı hedefler."
+                    },
+                    {
+                        "question": "Metne göre 'invaziv' yöntemler diğerlerinden hangi yönüyle ayrılır?",
+                        "option1": "Kafa derisi üzerinden sinyal toplamalarıyla.",
+                        "option2": "Elektrik kullanmadan çalışmalarıyla.",
+                        "option3": "Mikro-elektrotların doğrudan beyin dokusuna yerleştirilmesiyle.",
+                        "option4": "Sadece sağlıklı bireylerde kullanılabilmeleriyle.",
+                        "correctIndex": 2,
+                        "explanation": "İnvaziv yöntemler, cerrahi müdahale ile sensörlerin doğrudan serebral kortekse nakledilmesini içerir."
+                    },
+                    {
+                        "question": "Düşüncelerin dijital komutlara dönüşmesini sağlayan ana teknoloji hangisidir?",
+                        "option1": "Optik okuyucular.",
+                        "option2": "Makine öğrenimi algoritmaları.",
+                        "option3": "Mekanik anahtarlar.",
+                        "option4": "Kızılötesi sensörler.",
+                        "correctIndex": 1,
+                        "explanation": "Makine öğrenimi, beyindeki karmaşık ateşleme kalıplarını çözerek bunları anlaşılır komutlara dönüştürür."
+                    },
+                    {
+                        "question": "BCI teknolojisi başlangıçta özellikle hangi grubun hayatını kolaylaştırmak için geliştirilmiştir?",
+                        "option1": "Üst düzey yazılımcıların.",
+                        "option2": "Hızlı okuma uzmanlarının.",
+                        "option3": "Ağır motor engelli ve felçli bireylerin.",
+                        "option4": "Video oyunu geliştiricilerinin.",
+                        "correctIndex": 2,
+                        "explanation": "BCI'nın ilk ve en önemli kullanım alanı kilitlenme sendromu gibi ağır engelli hastaların dış dünyayla bağ kurmasını sağlamaktır."
+                    },
+                    {
+                        "question": "Gelecekte BCI'nın okuma konusundaki en uç potansiyeli nasıl tarif edilmektedir?",
+                        "option1": "Daha büyük puntolu kitapların basılmasıyla.",
+                        "option2": "Gözlerin daha hızlı hareket ettirilmesiyle.",
+                        "option3": "Bilginin duyusal kanalları baypas ederek doğrudan beyne yüklenmesiyle.",
+                        "option4": "Dijital ekranların çözünürlüğünün artırılmasıyla.",
+                        "correctIndex": 2,
+                        "explanation": "BCI, bilginin göz veya kulak gibi kısıtlı kanallar yerine doğrudan kortekse 'upload' edilmesini sağlayabilir."
+                    },
+                    {
+                        "question": "Nöral mahremiyet kavramı hangi temel endişeyi ifade eder?",
+                        "option1": "Beyin çiplerinin çok pahalı olması.",
+                        "option2": "Kişisel zihinsel verilere dışarıdan izinsiz erişim sağlanması.",
+                        "option3": "İnternet bağlantısının yavaşlaması.",
+                        "option4": "Beynin teknoloji yüzünden tembelleşmesi.",
+                        "correctIndex": 1,
+                        "explanation": "Nöral mahremiyet, en özelimiz olan düşünce verilerimizin güvenliği ve gizliliği ile ilgilidir."
+                    }
+                ]
+            },
+            {
+                "title": "Uyku Mimarisi: Beynin Gece Laboratuvarı ve Bellek Yönetimi",
+                "content": "On yıllar boyunca uyku, biyolojik bir mola veya pasif bir dinlenme süreci olarak hatalı bir şekilde değerlendirildi. Oysa modern nörobilim, uyuyan beynin uyanık olduğu zamandan bile daha aktif süreçler yürütebildiğini kanıtlamıştır. İnsan uykusu, bir gecede yaklaşık 90 dakikalık döngüler halinde tekrarlanan kompleks bir 'mimariye' sahiptir. Bu mimari temel olarak iki ana evreye ayrılır: Hızlı Göz Hareketi Olmayan (NREM) ve Hızlı Göz Hareketi (REM) evreleri. NREM uykusu kendi içinde üç aşamadan oluşur ve döngünün ilk basamağını oluşturur. (Bölüm 1)\n\nNREM uykusunun en kritik aşaması, 'Derin Uyku' veya 'Yavaş Dalga Uykusu' (SWS) olarak bilinen üçüncü aşamadır. Bu aşamada beyin, yüksek genlikli delta dalgaları yaymaya başlar ve vücut kendini fiziksel olarak onarır. Ancak bu evrenin en hayati işlevi 'glinfatik sistem'in devreye girmesidir. Glinfatik sistem, gün boyunca beyinde biriken beta-amiloid gibi zararlı metabolik atıkları temizleyen bir tür atık boşaltım mekanizmasıdır. Bu temizlik işlemi gerçekleşmediğinde, nörolojik yorgunluk ve ilerleyen yaşlarda ciddi bilişsel bozukluklar ortaya çıkabilir. (Bölüm 2)\n\nDerin uykunun bilişsel performansa, özellikle de öğrenmeye olan katkısı 'bellek konsolidasyonu' süreciyle gerçekleşir. Gün içinde öğrendiğimiz yeni bilgiler ilk olarak 'hipokampus' adı verilen, kapasitesi oldukça sınırlı olan geçici bir depolama merkezine kaydedilir. Uyku sırasında, özellikle derin uyku evresinde, bu bilgiler hipokampustan alınarak beynin daha geniş ve kalıcı depolama alanı olan 'neokorteks'e aktarılır. Bu süreç, kısa süreli anıların uzun süreli ve kalıcı bilgiye dönüştüğü yerdir. (Bölüm 3)\n\nAncak bellek yönetimi sadece bilgi aktarımıyla sınırlı değildir; beynin aynı zamanda verimsiz olanı elemesi gerekir. 'Sinaptik Homeostaz' teorisine göre beyin, uyku sırasında sinir ağlarındaki gereksiz bağlantıları aktif olarak budar. Bu budama işlemi, günün 'gürültüsünü' temizleyerek önemli bilgilerin sinaptik bağlarını güçlendirirken, önemsiz detayları zayıflatır. Eğer bu gece temizliği olmasaydı, nöral devrelerimiz aşırı yüklenir ve ertesi gün yeni bir bilgi öğrenecek kapasitemiz kalmazdı. (Bölüm 4)\n\nDerin uykunun ardından beyin, rüyaların görüldüğü REM evresine geçer. REM uykusu, bir 'entegrasyon laboratuvarı' gibi çalışır. NREM aşamasında depolanan ham bilgiler, REM aşamasında mevcut bilgi ağlarıyla birleştirilir. Bu evre, yaratıcı problem çözme yeteneğimizin merkezidir; beyin, görünüşte birbiriyle ilgisiz fikirler arasında yeni bağlar kurar. Ayrıca REM, duygusal travmaları işleyerek olayların sadece olgusal bilgisini saklayıp acı verici duygusal yükünü hafifleten bir 'gece terapisi' işlevi görür. (Bölüm 5)\n\nBu hassas uyku mimarisinin bozulması, bilişsel fonksiyonlar üzerinde yıkıcı bir etkiye sahiptir. Yapılan araştırmalar, sadece tek bir gece uykusuz kalmanın bile hipokampusun veri kabul kapasitesini %40 oranında düşürdüğünü göstermektedir. Bu durum, uykusuz bir beynin yeni bilgileri kaydetme yeteneğini neredeyse tamamen yitirmesi anlamına gelir. Sonuç olarak uyku, öğrenme sürecinin sonunda gerçekleşen bir lüks değil; öğrenmenin bizzat gerçekleştiği, ham verinin bilgeliğe dönüştüğü en aktif işleme sürecidir. (Bölüm 6)",
+                "questions": [
+                    {
+                        "question": "Modern nörobilime göre uykunun temel yapısı kaç ana evreden oluşmaktadır?",
+                        "option1": "Sadece rüya görülen tek bir evre.",
+                        "option2": "Birbirinden bağımsız beş farklı aşama.",
+                        "option3": "NREM ve REM olmak üzere iki ana evre.",
+                        "option4": "Sadece fiziksel dinlenmenin olduğu pasif bir evre.",
+                        "correctIndex": 2,
+                        "explanation": "Metnin başında uykunun NREM ve REM olmak üzere iki ana evreye ayrıldığı belirtilmiştir."
+                    },
+                    {
+                        "question": "Metinde bahsedilen 'glinfatik sistem'in temel görevi nedir?",
+                        "option1": "Yeni anıları kalıcı depoya aktarmak.",
+                        "option2": "Beyindeki zararlı metabolik atıkları temizlemek.",
+                        "option3": "Vücudun kalp atış hızını düzenlemek.",
+                        "option4": "Rüya görmeyi başlatmak.",
+                        "correctIndex": 1,
+                        "explanation": "Glinfatik sistem, beyindeki beta-amiloid gibi atıkları temizleyen bir boşaltım mekanizması olarak tanımlanmıştır."
+                    },
+                    {
+                        "question": "Kısa süreli anıların uzun süreli belleğe dönüşmesi için bilgiler nereye aktarılır?",
+                        "option1": "Hipokampustan neokortekse.",
+                        "option2": "Neokorteksten hipokampusa.",
+                        "option3": "Glinfatik sistemden sinir ağlarına.",
+                        "option4": "Sadece beyin sapı içinde saklanır.",
+                        "correctIndex": 0,
+                        "explanation": "Metne göre bilgiler sınırlı kapasiteli hipokampustan kalıcı depo olan neokortekse aktarılır."
+                    },
+                    {
+                        "question": "Sinaptik Homeostaz teorisi, beynin uyku sırasında hangi işlemi yaptığını savunur?",
+                        "option1": "Tüm bilgileri hiçbir ayrım yapmadan sakladığını.",
+                        "option2": "Yeni nöronlar üreterek kapasiteyi artırdığını.",
+                        "option3": "Gereksiz nöral bağlantıları budayarak gürültüyü temizlediğini.",
+                        "option4": "Duygusal anıları tamamen sildiğini.",
+                        "correctIndex": 2,
+                        "explanation": "Bu teoriye göre beyin, verimliliği artırmak için gereksiz bağlantıları budayarak temizlik yapar."
+                    },
+                    {
+                        "question": "Yaratıcı problem çözme ve duygusal arınma uykunun hangi aşamasında gerçekleşir?",
+                        "option1": "Hafif uyku aşamasında.",
+                        "option2": "Delta dalgalarının yayıldığı derin uyku evresinde.",
+                        "option3": "REM evresinde.",
+                        "option4": "Uykunun ilk 15 dakikasında.",
+                        "correctIndex": 2,
+                        "explanation": "REM evresi, fikirlerin birleştirildiği bir laboratuvar ve duygusal bir terapi alanı olarak tanımlanmıştır."
+                    },
+                    {
+                        "question": "Tek bir gece uykusuz kalmak, beynin bilgi kaydetme kapasitesini yaklaşık ne kadar düşürür?",
+                        "option1": "Etkilemez, sadece yorgunluk yapar.",
+                        "option2": "%40 oranında.",
+                        "option3": "%10 oranında.",
+                        "option4": "Sadece %100 uykusuzlukta etkilenir.",
+                        "correctIndex": 1,
+                        "explanation": "Metnin sonunda uykusuzluğun hipokampus kapasitesini %40 düşürdüğü bilimsel bir veri olarak verilmiştir."
+                    }
+                ]
+            },
+            {
+                "title": "Akış Psikolojisi: Zihinsel Performansın Zirve Noktası",
+                "content": "Psikolog Mihaly Csikszentmihalyi tarafından tanımlanan 'Akış' (Flow) kavramı, bireyin bir işe tamamen odaklandığı ve dış dünyanın varlığını unuttuğu 'optimal deneyim' halini tanımlar. Bu durumdayken kişi, yaptığı işin içinde adeta erir; zaman algısı değişir ve öz-bilinç (kendini eleştirme hali) geçici olarak kaybolur. Akış hali 'ototelik' bir yapıya sahiptir. Ototelik, yapılan aktivitenin herhangi bir dış ödül veya sonuç beklemeden, sadece aktivitenin kendisi için yapılmasını ve bundan keyif alınmasını ifade eder. (Bölüm 1)\n\nAkışın gerçekleşmesi için 'Akış Kanalı' adı verilen hassas bir dengenin kurulması gerekir. Bu kanal, görevin zorluğu ile bireyin beceri seviyesi arasındaki korelasyona dayanır. Eğer bir görev kişinin becerisine göre çok kolaysa, birey hızla sıkılır. Aksine, görev beceriyi aşacak kadar zorsa, bu durum kaygı ve hüsrana yol açar. Akış, ancak zorluğun tam kararında olduğu; yani kişinin sınırlarını zorlayan ama onu felç etmeyen o ince çizgide ortaya çıkar. Bu durum, beynin her an ne yapması gerektiğini bildiği net hedeflerle desteklenmelidir. (Bölüm 2)\n\nBu durumun nörolojik temeli oldukça şaşırtıcıdır. Akış anında beynin 'yönetici' merkezi olan prefrontal korteksin bazı bölgeleri daha az aktif hale gelir. Bu fenomene 'geçici hipofrontalite' denir. Kendi kendimizi sorguladığımız, şüphe duyduğumuz veya sosyal olarak yargılanma korkusu yaşadığımız beyin bölgelerinin 'sessize alınması', bilginin çok daha akıcı ve sezgisel bir şekilde işlenmesini sağlar. Bu, bilinçli düşüncenin yavaşlatıcı etkisini ortadan kaldırarak performansı zirveye taşır. (Bölüm 3)\n\nAkış hali sırasında beynde yüksek performanslı bir kimyasal kokteyl salgılanır. Dopamin odağı keskinleştirip kalıpları tanımanıza yardım ederken, norepinefrin enerji seviyesini ve kalp atış hızını artırarak dikkati ayakta tutar. Ayrıca vücudun kendi ürettiği doğal 'haz' kimyasalları olan endorfin ve anandamid devreye girer. Bu kimyasal sinerji, sadece o anki verimliliği artırmakla kalmaz, aynı zamanda öğrenme sürecini de dramatik şekilde hızlandırır. Beyin bu keyifli durumu tekrarlamak istediği için daha zorlu görevlere karşı doğal bir motivasyon geliştirir. (Bölüm 4)\n\nHızlı okuma bağlamında Akış, teknik becerinin saf bir görsel algıya dönüştüğü andır. Bu seviyeye ulaşan bir okuyucu, artık kelimeleri içinden seslendirmez (subvocalization); bunun yerine kavramları doğrudan zihninde canlandırır. Mekanik göz hareketleri ile anlamlandırma süreci tek bir zahmetsiz akışta birleşir. Ancak bu durum oldukça kırılgandır. Bir telefon bildirimi veya ani bir gürültü bu odaklanmayı anında parçalayabilir. Araştırmalar, bu derin konsantrasyon haline geri dönmenin bazen 20 dakikadan fazla sürebildiğini göstermektedir. (Bölüm 5)",
+                "questions": [
+                    {
+                        "question": "Metinde geçen 'ototelik' kavramı aşağıdakilerden hangisini en iyi açıklar?",
+                        "option1": "Yüksek maddi kazanç getiren işler.",
+                        "option2": "Aktivitenin dış bir ödül olmaksızın, kendisi için yapılması.",
+                        "option3": "Zorunlu olarak yapılması gereken rutinler.",
+                        "option4": "Başkalarının onayı için sergilenen performanslar.",
+                        "correctIndex": 1,
+                        "explanation": "Ototelik, aktivitenin kendisinin bir ödül olması ve dış motivasyona ihtiyaç duymaması anlamına gelir."
+                    },
+                    {
+                        "question": "Akış Kanalı teorisine göre, bir görev bireyin becerisini çok fazla aştığında hangi duygu ortaya çıkar?",
+                        "option1": "Can sıkıntısı.",
+                        "option2": "Kaygı ve hüsran.",
+                        "option3": "Aşırı özgüven.",
+                        "option4": "Fiziksel yorgunluk.",
+                        "correctIndex": 1,
+                        "explanation": "Zorluk seviyesi becerinin çok üzerinde olduğunda birey akışa girmek yerine kaygı ve stres yaşar."
+                    },
+                    {
+                        "question": "Geçici hipofrontalite süreci beyinde nasıl bir değişim yaratır?",
+                        "option1": "Prefrontal korteksin daha aktif çalışmasını sağlar.",
+                        "option2": "Düşüncelerin tamamen durmasına yol açar.",
+                        "option3": "Öz-eleştiri yapan bölgeleri susturarak akışkanlığı artırır.",
+                        "option4": "Görsel korteksin devre dışı kalmasına neden olur.",
+                        "correctIndex": 2,
+                        "explanation": "Bu süreçte beynin eleştirel ve denetleyici kısımları yavaşlayarak daha sezgisel ve hızlı bir performansa izin verir."
+                    },
+                    {
+                        "question": "Hangi kimyasal, akış anında beynin kalıpları tanımasına ve odağın keskinleşmesine yardımcı olur?",
+                        "option1": "Dopamin.",
+                        "option2": "Melatonin.",
+                        "option3": "İnsülin.",
+                        "option4": "Kortizol.",
+                        "correctIndex": 0,
+                        "explanation": "Dopamin, odaklanma ve örüntü tanıma süreçlerinde kilit rol oynayan bir nörotransmitterdir."
+                    },
+                    {
+                        "question": "Akış halindeki bir okuyucuda en belirgin değişim aşağıdakilerden hangisidir?",
+                        "option1": "Kelimeleri daha yavaş okumaya başlaması.",
+                        "option2": "İç seslendirmeyi bırakıp kavramları doğrudan görselleştirmesi.",
+                        "option3": "Okuduğu her kelimenin harflerine odaklanması.",
+                        "option4": "Sadece başlıkları okuyarak ilerlemesi.",
+                        "correctIndex": 1,
+                        "explanation": "Akış durumundaki okuyucu mekanik süreci aşarak anlamı doğrudan görsel bir veri olarak işler."
+                    }
+                ]
+            }
+        ]
     }
 }

@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useTheme, readingFontFamilies } from '../../theme';
-import { useReadingEngine, ReadingMode } from '../../engine';
+import { useReadingEngine } from '../../engine';
 import {
     RSVPWordDisplay,
     RSVPControls,
@@ -20,13 +20,9 @@ import {
     GuidedScrollingDisplay,
     DualColumnReading,
 } from '../../components';
-import { ComprehensionModal } from '../../components/training/Comprehension/ComprehensionModal';
 import { ReadingSettings, DEFAULT_READING_SETTINGS, SettingKey, BIONIC_COLORS } from '../../engine/settings';
-import { loadAllChunksForBook, getBook, updateReadingPosition } from '../../services/libraryStorage';
-import { getPassageByLanguage, calculateQuestionPoints, type ComprehensionPassage } from '../../data/comprehensionContent';
+import { loadAllChunksForBook, getBook } from '../../services/libraryStorage';
 import type { MainTabParamList } from '../../navigation';
-
-import i18n from '../../i18n';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -51,7 +47,7 @@ Gruplama yöntemi (Chunking), kelimeleri anlamlı ifadeler halinde gruplayarak f
 
 Çift sütunlu seğirme (saccade) eğitimi, iki dikey çizgi arasında odak noktalarını değiştirerek verimli göz hareketi kalıpları geliştirmeye yardımcı olur. Bu teknik, çevresel görüşünüzü her bakışta daha fazla bilgi yakalamak için eğitir ve bir metin satırını okumak için gereken toplam odaklanma sayısını azaltır. Tutarlı bir pratikle, bu sistematik eğitim yöntemleri okuma yeteneklerinizi dönüştürebilir ve bilgi işleme hızınızı önemli ölçüde artırabilir.`;
 
-type ReadScreenRouteProp = RouteProp<MainTabParamList & { Read: { bookId?: string; bookTitle?: string; comprehensionMode?: boolean } }, 'Read'>;
+type ReadScreenRouteProp = RouteProp<MainTabParamList & { Read: { bookId?: string; bookTitle?: string } }, 'Read'>;
 
 export const ReadScreen: React.FC = () => {
     const { t, i18n } = useTranslation();
@@ -63,20 +59,12 @@ export const ReadScreen: React.FC = () => {
     const wpmScaleAnim = useRef(new Animated.Value(1)).current;
     const [readingSettings, setReadingSettings] = useState<ReadingSettings>(DEFAULT_READING_SETTINGS);
     const [settingsModalVisible, setSettingsModalVisible] = useState(false);
-    
+
     // Book loading state
     const [bookContent, setBookContent] = useState<string | null>(null);
     const [bookTitle, setBookTitle] = useState<string>('Speed Reading');
     const [isLoading, setIsLoading] = useState(false);
     const [loadError, setLoadError] = useState<string | null>(null);
-
-    // Comprehension check state
-    const [comprehensionEnabled, setComprehensionEnabled] = useState(false);
-    const [comprehensionPassage, setComprehensionPassage] = useState<ComprehensionPassage | null>(null);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [questionModalVisible, setQuestionModalVisible] = useState(false);
-    const [comprehensionScore, setComprehensionScore] = useState({ correct: 0, total: 0 });
-    const questionPointsRef = useRef<number[]>([]);
 
     // Get route params
     const bookId = route.params?.bookId;
@@ -118,26 +106,6 @@ export const ReadScreen: React.FC = () => {
     const defaultText = i18n.language === 'tr' ? SAMPLE_TEXT_TR : SAMPLE_TEXT;
     const activeText = bookContent || defaultText;
 
-    // Get route params
-    const comprehensionMode = route.params?.comprehensionMode || false;
-
-    // Initialize comprehension mode
-    useEffect(() => {
-        if (comprehensionMode && !bookId) {
-            // Use comprehension passage instead of sample text
-            const passage = getPassageByLanguage(i18n.language === 'tr' ? 'tr' : 'en');
-            setComprehensionPassage(passage);
-            setComprehensionEnabled(true);
-            setBookTitle(passage.title);
-
-            // Calculate question trigger points (every ~100 words)
-            const points = calculateQuestionPoints(passage.wordCount, passage.questions.length);
-            questionPointsRef.current = points;
-            setCurrentQuestionIndex(0);
-            setComprehensionScore({ correct: 0, total: 0 });
-        }
-    }, [comprehensionMode, bookId, i18n.language]);
-
     const handleSettingChange = (key: SettingKey, value: boolean | string | number) => {
         setReadingSettings((prev) => ({ ...prev, [key]: value }));
     };
@@ -153,47 +121,6 @@ export const ReadScreen: React.FC = () => {
             console.log('Reading complete!');
         },
     });
-
-    // Check if we should show a comprehension question
-    useEffect(() => {
-        if (!comprehensionEnabled || !comprehensionPassage || !engine.isPlaying) return;
-
-        const currentWordIndex = engine.currentIndex;
-        const nextQuestionPoint = questionPointsRef.current[currentQuestionIndex];
-
-        // Check if we've reached a question point
-        if (currentWordIndex >= nextQuestionPoint && currentQuestionIndex < comprehensionPassage.questions.length) {
-            // Pause reading
-            engine.pause();
-            // Show question modal
-            setQuestionModalVisible(true);
-        }
-    }, [engine.currentIndex, engine.isPlaying, comprehensionEnabled, comprehensionPassage, currentQuestionIndex]);
-
-    // Comprehension question handlers
-    const handleAnswerQuestion = (correct: boolean) => {
-        setComprehensionScore(prev => ({
-            correct: prev.correct + (correct ? 1 : 0),
-            total: prev.total + 1
-        }));
-    };
-
-    const handleCloseQuestion = () => {
-        setQuestionModalVisible(false);
-        setCurrentQuestionIndex(prev => prev + 1);
-
-        // Resume reading after a brief delay
-        setTimeout(() => {
-            if (currentQuestionIndex < (comprehensionPassage?.questions.length || 0) - 1) {
-                engine.resume();
-            } else {
-                // All questions answered - show final score
-                console.log('Comprehension Training Complete!', comprehensionScore);
-            }
-        }, 300);
-    };
-
-    // Reading engine with current text
 
 
     // Animate WPM changes
@@ -333,7 +260,7 @@ export const ReadScreen: React.FC = () => {
             <View style={[styles.content, { paddingTop: insets.top + spacing.md }]}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <Text 
+                    <Text
                         style={[styles.title, { fontFamily: fontFamily.uiBold, color: colors.text }]}
                         numberOfLines={1}
                     >
@@ -429,18 +356,6 @@ export const ReadScreen: React.FC = () => {
                     </>
                 )}
             </View>
-
-            {/* Comprehension Question Modal */}
-            {comprehensionEnabled && comprehensionPassage && (
-                <ComprehensionModal
-                    visible={questionModalVisible}
-                    question={comprehensionPassage.questions[currentQuestionIndex]}
-                    questionNumber={currentQuestionIndex + 1}
-                    totalQuestions={comprehensionPassage.questions.length}
-                    onAnswer={handleAnswerQuestion}
-                    onClose={handleCloseQuestion}
-                />
-            )}
         </View>
     );
 };

@@ -60,6 +60,8 @@ model Book {
   coverColor       String
   importedAt       DateTime  @default(now())
   lastReadAt       DateTime?
+  pdfUrl           String?
+  coverUrl         String?
 
   // Relations
   user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)

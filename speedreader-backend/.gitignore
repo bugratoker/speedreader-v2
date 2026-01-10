@@ -12,7 +12,8 @@ dist/
 # Database
 *.db
 *.db-journal
-prisma/migrations/
+src/prisma/migrations/
+src/prisma/generated
 
 # Logs
 logs/

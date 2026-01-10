@@ -7,7 +7,10 @@ import { Request, Response, NextFunction } from 'express';
 import pdfParse from 'pdf-parse';
 import { cleanText, countWords, chunkText, generateColorFromString } from '../utils/helpers';
 import { prisma } from '../utils/prisma';
+import { storageService } from '../services/storage.service';
+import { generateCoverImage } from '../utils/pdf-to-image';
 import type { PdfParseResult } from '../types';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * POST /api/pdf/parse
@@ -74,6 +77,7 @@ export async function importPdf(req: Request, res: Response, next: NextFunction)
 
         const buffer = req.file.buffer;
         const originalFileName = req.file.originalname || 'document.pdf';
+        const fileUuid = uuidv4();
 
         // Parse PDF
         const pdfData = await pdfParse(buffer);
@@ -86,6 +90,26 @@ export async function importPdf(req: Request, res: Response, next: NextFunction)
                 error: 'PDF contains too little text. It may be scanned or image-based.',
             });
             return;
+        }
+
+        // Upload PDF to R2
+        let pdfUrl: string | undefined;
+        try {
+            const fileKey = `pdfs/${userId}/${fileUuid}.pdf`;
+            pdfUrl = await storageService.uploadFile(fileKey, buffer, 'application/pdf');
+        } catch (error) {
+            console.error('Failed to upload PDF to storage:', error);
+        }
+
+        // Generate and Upload Cover Image
+        let coverUrl: string | undefined;
+        try {
+            const coverBuffer = await generateCoverImage(buffer);
+            const coverKey = `covers/${userId}/${fileUuid}.png`;
+            coverUrl = await storageService.uploadFile(coverKey, coverBuffer, 'image/png');
+        } catch (error) {
+            console.error('Failed to generate or upload cover image:', error);
+            // Non-critical, continue without cover
         }
 
         // Create chunks
@@ -102,6 +126,8 @@ export async function importPdf(req: Request, res: Response, next: NextFunction)
                 totalWords: wordCount,
                 totalChunks: chunks.length,
                 coverColor: generateColorFromString(originalFileName),
+                pdfUrl: pdfUrl,
+                coverUrl: coverUrl,
             },
         });
 

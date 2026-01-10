@@ -1,5 +1,5 @@
 # Build stage
-FROM node:24-alpine AS builder
+FROM node:24-slim AS builder
 
 WORKDIR /app
 
@@ -14,6 +14,8 @@ COPY src/prisma ./src/prisma
 COPY prisma.config.ts ./
 
 # Generate Prisma client
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
 RUN npx prisma generate
 
 # Copy source code
@@ -23,7 +25,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:24-alpine AS production
+FROM node:24-slim AS production
 
 WORKDIR /app
 
@@ -57,21 +59,33 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 CMD ["node", "dist/index.js"]
 
 # Development stage (for docker-compose dev mode)
-FROM node:24-alpine AS development
+FROM node:24-slim AS development
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
+# Install system dependencies for node-canvas (required by pdf-img-convert)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev
+
 # Install all dependencies (including devDependencies)
-RUN npm ci
+# Remove package-lock.json to avoid platform conflicts (Windows host -> Linux container)
+RUN rm -f package-lock.json && npm install
 
 # Copy Prisma schema
 COPY src/prisma ./src/prisma
 COPY prisma.config.ts ./
 
 # Generate Prisma client
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
 RUN npx prisma generate
 
 # Copy source code

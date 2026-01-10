@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -25,15 +23,30 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        DATABASE_URL: postgresql://speedreader:speedreader_secret@postgres:5432/speedreader
     container_name: speedreader-api
     restart: unless-stopped
     environment:
+      # Server Configuration
       NODE_ENV: development
       PORT: 3001
+
+      # Database - PostgreSQL (Docker Compose default)
+      # Connect to the 'postgres' service defined in docker-compose
       DATABASE_URL: postgresql://speedreader:speedreader_secret@postgres:5432/speedreader
+      # JWT Authentication
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
       JWT_EXPIRES_IN: 7d
       JWT_REFRESH_EXPIRES_IN: 30d
+
+      # Cloudflare R2 Storage
+      R2_ACCOUNT_ID: 1f6bf9883d3733e94952f8af6db90bd3
+      R2_ACCESS_KEY_ID: ed356f37a0864fe1b38bc8df8591b00e
+      R2_SECRET_ACCESS_KEY: 7b851dd3007487b31e273893d7e0fb1a390afe5c6d43bc384d84668d95a7c782
+      R2_BUCKET_NAME: speedreader
+      R2_PUBLIC_URL: https://pub-ef4806522abf4b1397f5605aef3399fc.r2.dev # This is for development
+
     ports:
       - "3001:3001"
     volumes:

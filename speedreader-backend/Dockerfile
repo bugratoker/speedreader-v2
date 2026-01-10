@@ -91,8 +91,13 @@ RUN npx prisma generate
 # Copy source code
 COPY . .
 
+# Copy and set up entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Expose port
 EXPOSE 3001
 
-# Start in development mode
+# Use entrypoint for database migrations, then start dev server
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["npm", "run", "dev"]

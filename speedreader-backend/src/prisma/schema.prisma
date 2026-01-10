@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============ USER & AUTH ============
+
+model User {
+  id        String   @id @default(cuid())
+  email     String?  @unique // Optional for guest users
+  password  String? // Optional for social auth users
+  name      String
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Auth fields
+  authMethod String  @default("email") // 'email' | 'google' | 'apple' | 'guest'
+  googleId   String? @unique
+  appleId    String? @unique
+  isGuest    Boolean @default(false)
+
+  // Relations
+  books            Book[]
+  progress         ReadingProgress[]
+  sessions         ReadingSession[]
+  stats            UserStats?
+  trainingSessions TrainingSession[]
+  refreshTokens    RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ============ LIBRARY & BOOKS ============
+
+model Book {
+  id               String    @id @default(cuid())
+  userId           String
+  title            String
+  author           String?
+  sourceType       String // 'pdf' | 'epub' | 'url' | 'text' | 'ai'
+  originalFileName String?
+  totalWords       Int
+  totalChunks      Int
+  coverColor       String
+  importedAt       DateTime  @default(now())
+  lastReadAt       DateTime?
+
+  // Relations
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunks   TextChunk[]
+  progress ReadingProgress[]
+  sessions ReadingSession[]
+
+  @@index([userId])
+}
+
+model TextChunk {
+  id         String @id @default(cuid())
+  bookId     String
+  chunkIndex Int
+  content    String
+  wordCount  Int
+  startWord  Int
+  endWord    Int
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, chunkIndex])
+  @@index([bookId])
+}
+
+// ============ READING PROGRESS ============
+
+model ReadingProgress {
+  id         String   @id @default(cuid())
+  userId     String
+  bookId     String
+  chunkIndex Int
+  wordIndex  Int
+  percentage Int
+  lastReadAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@index([userId])
+  @@index([bookId])
+}
+
+model ReadingSession {
+  id        String    @id @default(cuid())
+  userId    String
+  bookId    String
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  wordsRead Int       @default(0)
+  wpm       Int       @default(0)
+  mode      String // 'rsvp' | 'bionic' | 'chunk' | 'dual'
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([bookId])
+}
+
+// ============ USER STATISTICS ============
+
+model UserStats {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  totalBooksRead Int      @default(0)
+  totalWordsRead Int      @default(0)
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  currentWpm     Int      @default(250)
+  bestWpm        Int      @default(250)
+  lastActiveAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ============ TRAINING ============
+
+model TrainingSession {
+  id           String   @id @default(cuid())
+  userId       String
+  exerciseType String // 'schulte' | 'saccadic' | 'eyeStretch' | 'peripheral'
+  score        Int
+  duration     Int // in seconds
+  completedAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
